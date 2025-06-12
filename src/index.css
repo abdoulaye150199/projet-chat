@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .display-toggle[data-state='visible'] {
+    @apply flex;
+  }
+  .display-toggle[data-state='hidden'] {
+    @apply hidden;
+  }
+}
+
+/* Structure de base */
+#chat-content {
+  display: flex;
+  flex: 1;
+  min-width: 0; /* Empêche le débordement */
+}
+
+/* Style pour la vue status */
+.view-container {
+  width: 400px;
+  min-width: 400px;
+  border-right: 1px solid #2a3942;
+}
+
+/* Style pour le conteneur de messages */
+#messages-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0; /* Empêche le débordement */
+}
+
+/* Style pour l'écran de bienvenue */
+#welcome-screen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #222e35;
+}
