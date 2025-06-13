@@ -262,7 +262,7 @@ async function createNewChat(contact) {
 
     try {
       // Sauvegarder dans l'API
-      const response = await fetch('https://serveur2.onrender.com', {
+      const response = await fetch(`${API_URL}/chats`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -349,7 +349,38 @@ async function createNewGroup(groupData) {
 // Ne pas exporter cette fonction
 async function updateLastMessage(chatId, text) {
   try {
-    const response = await fetch(`${API_URL}/chats/${chatId}`, {
+    // Vérifier d'abord si le chat existe
+    const checkResponse = await fetch(`${API_URL}/chats/${chatId}`);
+    
+    if (!checkResponse.ok) {
+      // Si le chat n'existe pas, le créer
+      const newChat = {
+        id: chatId,
+        lastMessage: text,
+        timestamp: new Date().toLocaleTimeString('fr-FR', {
+          hour: '2-digit',
+          minute: '2-digit'
+        }),
+        messages: []
+      };
+
+      const createResponse = await fetch(`${API_URL}/chats`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(newChat)
+      });
+
+      if (!createResponse.ok) {
+        throw new Error('Erreur lors de la création du chat');
+      }
+
+      return;
+    }
+
+    // Si le chat existe, mettre à jour le dernier message
+    const updateResponse = await fetch(`${API_URL}/chats/${chatId}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json'
@@ -363,12 +394,22 @@ async function updateLastMessage(chatId, text) {
       })
     });
 
-    if (!response.ok) {
+    if (!updateResponse.ok) {
       throw new Error('Erreur lors de la mise à jour du dernier message');
     }
   } catch (error) {
     console.error('Erreur updateLastMessage:', error);
-    throw error;
+    // Gérer localement si le serveur échoue
+    loadChats();
+    const chatIndex = chats.findIndex(c => c.id === chatId);
+    if (chatIndex !== -1) {
+      chats[chatIndex].lastMessage = text;
+      chats[chatIndex].timestamp = new Date().toLocaleTimeString('fr-FR', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+      saveChats();
+    }
   }
 }
 

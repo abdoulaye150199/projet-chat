@@ -1,5 +1,5 @@
 import { getAllChats, getChatById, searchChats, markAsRead, createNewChat, createNewGroup } from '../models/chatModel.js';
-import { addMessage, getMessagesByChatId, getMessages } from '../models/messageModel.js'; // Ajout de l'import
+import { addMessage, getMessagesByChatId, getMessages, markMessagesAsDelivered } from '../models/messageModel.js'; // Ajout de l'import
 import { renderChatList, updateChatInList } from '../views/chatListView.js';
 import { 
   renderChatHeader, 
@@ -172,7 +172,7 @@ function handleChatClick(chat) {
 
   // Simuler la livraison des messages après un délai
   setTimeout(() => {
-    markMessagesAsDelivered(chat.id);
+    markMessagesAsDelivered(chat.id);  // Maintenant la fonction est disponible
   }, 1000);
 }
 
