@@ -1,6 +1,6 @@
 import { updateLastMessage, createNewChat, getAllChats, getChatById } from './chatModel.js';
 
-const API_URL = 'https://serveur2.onrender.com';
+const API_URL = 'http://localhost:3000';
 
 // Initialiser un objet vide pour les messages
 let messages = {};

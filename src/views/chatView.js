@@ -156,6 +156,7 @@ function createDateSeparator(dateText) {
 function createMessageElement(message) {
   const messageContainer = document.createElement('div');
   messageContainer.className = `flex ${message.isMe ? 'justify-end' : 'justify-start'} mb-1`;
+  messageContainer.setAttribute('data-message-id', message.id);
   
   const messageBubble = document.createElement('div');
   messageBubble.className = `relative max-w-[65%] rounded-lg px-3 py-2 ${
@@ -166,15 +167,75 @@ function createMessageElement(message) {
 
   // Vérifier si c'est un message audio
   if (message.isVoice) {
-    const voiceMessage = createVoiceMessageElement(message);
-    messageBubble.appendChild(voiceMessage);
+    const voiceContainer = document.createElement('div');
+    voiceContainer.className = 'flex items-center gap-3 min-w-[280px] py-2';
+    
+    // Bouton play/pause
+    const playButton = document.createElement('button');
+    playButton.className = `w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-200 ${
+      message.isMe 
+        ? 'bg-white bg-opacity-20 hover:bg-opacity-30 text-white' 
+        : 'bg-[#00a884] hover:bg-[#06cf9c] text-white'
+    }`;
+    playButton.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+      </svg>
+    `;
+    
+    // Forme d'onde
+    const waveform = document.createElement('div');
+    waveform.className = 'flex-1 flex items-center gap-0.5 h-8';
+    
+    // Générer une forme d'onde
+    for (let i = 0; i < 40; i++) {
+      const bar = document.createElement('div');
+      const height = Math.random() * 100;
+      bar.className = `w-1 bg-current opacity-50`;
+      bar.style.height = `${height}%`;
+      waveform.appendChild(bar);
+    }
+    
+    // Durée
+    const duration = document.createElement('span');
+    duration.className = 'text-sm text-white ml-2';
+    duration.textContent = message.duration || '0:00';
+
+    voiceContainer.appendChild(playButton);
+    voiceContainer.appendChild(waveform); 
+    voiceContainer.appendChild(duration);
+    
+    messageBubble.appendChild(voiceContainer);
+
+    // Gérer la lecture audio
+    if (message.audioBlob) {
+      const audio = new Audio(URL.createObjectURL(message.audioBlob));
+      playButton.onclick = () => {
+        if (audio.paused) {
+          audio.play();
+          playButton.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <rect x="6" y="4" width="4" height="16"></rect>
+              <rect x="14" y="4" width="4" height="16"></rect>
+            </svg>
+          `;
+        } else {
+          audio.pause();
+          playButton.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+          `;
+        }
+      };
+    }
   } else {
     // Message texte normal
-    const messageContent = document.createElement('div');
-    messageContent.innerHTML = parseEmojis(message.text || '');
-    messageBubble.appendChild(messageContent);
+    const messageText = document.createElement('div');
+    messageText.innerHTML = parseEmojis(message.text || '');
+    messageBubble.appendChild(messageText);
   }
-  
+
   // Footer avec timestamp et statut
   const messageFooter = document.createElement('div');
   messageFooter.className = 'flex items-center justify-end gap-1 mt-1';
@@ -185,22 +246,11 @@ function createMessageElement(message) {
   
   messageFooter.appendChild(timestamp);
   
-  // Ajouter les indicateurs de statut pour les messages envoyés
   if (message.isMe) {
     const statusIcon = document.createElement('span');
     statusIcon.className = 'text-[12px] ml-1 status-icon';
-    
-    if (message.read) {
-      statusIcon.innerHTML = '✓✓';
-      statusIcon.className += ' text-[#53bdeb]';
-    } else if (message.delivered) {
-      statusIcon.innerHTML = '✓✓';
-      statusIcon.className += ' text-[#8696a0]';
-    } else if (message.sent) {
-      statusIcon.innerHTML = '✓';
-      statusIcon.className += ' text-[#8696a0]';
-    }
-    
+    statusIcon.innerHTML = message.read ? '✓✓' : message.delivered ? '✓✓' : '✓';
+    statusIcon.style.color = message.read ? '#53bdeb' : '#8696a0';
     messageFooter.appendChild(statusIcon);
   }
   
@@ -238,61 +288,174 @@ function createImageMessage(message) {
 
 function createVoiceMessageElement(message) {
   const voiceContainer = document.createElement('div');
-  voiceContainer.className = 'flex items-center gap-2 min-w-[200px] py-1';
+  voiceContainer.className = 'flex items-center gap-3 min-w-[280px] py-2';
   
+  // Avatar de l'utilisateur (pour les messages reçus)
+  if (!message.isMe) {
+    const avatar = document.createElement('div');
+    avatar.className = 'w-8 h-8 rounded-full overflow-hidden flex-shrink-0';
+    avatar.innerHTML = `
+      <img src="${message.senderAvatar || './src/assets/images/profile.jpeg'}" 
+           alt="Avatar" 
+           class="w-full h-full object-cover">
+    `;
+    voiceContainer.appendChild(avatar);
+  }
+  
+  // Bouton play/pause
   const playButton = document.createElement('button');
-  playButton.className = 'text-white hover:text-gray-300 flex-shrink-0 w-8 h-8 rounded-full bg-white bg-opacity-20 flex items-center justify-center';
+  playButton.className = `w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-200 ${
+    message.isMe 
+      ? 'bg-white bg-opacity-20 hover:bg-opacity-30 text-white' 
+      : 'bg-[#00a884] hover:bg-[#06cf9c] text-white'
+  }`;
   playButton.innerHTML = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
       <polygon points="5 3 19 12 5 21 5 3"></polygon>
     </svg>
   `;
   
-  const waveform = document.createElement('div');
-  waveform.className = 'flex-1 flex items-center gap-1 h-8';
+  // Conteneur de la forme d'onde et durée
+  const waveformContainer = document.createElement('div');
+  waveformContainer.className = 'flex-1 flex items-center gap-3';
   
-  // Créer une forme d'onde simple
-  for (let i = 0; i < 30; i++) {
+  // Forme d'onde
+  const waveform = document.createElement('div');
+  waveform.className = 'flex-1 flex items-center gap-0.5 h-8 cursor-pointer';
+  
+  // Générer une forme d'onde réaliste
+  const waveformBars = [];
+  const barCount = 40;
+  for (let i = 0; i < barCount; i++) {
     const bar = document.createElement('div');
-    bar.className = 'flex-1 bg-white bg-opacity-20 rounded-full';
-    bar.style.height = `${Math.random() * 100}%`;
+    bar.className = `w-0.5 rounded-full transition-all duration-200 ${
+      message.isMe 
+        ? 'bg-white bg-opacity-40 hover:bg-opacity-60' 
+        : 'bg-[#8696a0] hover:bg-[#aebac1]'
+    }`;
+    
+    // Hauteur variable pour simuler une vraie forme d'onde
+    const heights = ['h-1', 'h-2', 'h-3', 'h-4', 'h-5', 'h-6', 'h-4', 'h-3', 'h-2'];
+    const randomHeight = heights[Math.floor(Math.random() * heights.length)];
+    bar.classList.add(randomHeight);
+    
+    waveformBars.push(bar);
     waveform.appendChild(bar);
   }
   
+  // Durée du message vocal
   const duration = document.createElement('span');
-  duration.className = 'text-sm text-white text-opacity-80 flex-shrink-0 font-mono';
+  duration.className = `text-sm flex-shrink-0 font-mono ${
+    message.isMe ? 'text-white text-opacity-80' : 'text-[#8696a0]'
+  }`;
   duration.textContent = message.duration || '0:00';
-
-  // Fonctionnalité audio
+  
+  waveformContainer.appendChild(waveform);
+  waveformContainer.appendChild(duration);
+  
+  voiceContainer.appendChild(playButton);
+  voiceContainer.appendChild(waveformContainer);
+  
+  // Variables pour la lecture audio
+  let audio = null;
+  let isPlaying = false;
+  let currentTime = 0;
+  let totalDuration = 0;
+  
+  // Créer l'objet audio si on a un blob
   if (message.audioBlob) {
     const audioUrl = URL.createObjectURL(message.audioBlob);
-    const audio = new Audio(audioUrl);
+    audio = new Audio(audioUrl);
     
-    playButton.addEventListener('click', () => {
-      if (audio.paused) {
-        audio.play();
-        playButton.innerHTML = `
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-            <rect x="6" y="4" width="4" height="16"></rect>
-            <rect x="14" y="4" width="4" height="16"></rect>
-          </svg>
-        `;
-      } else {
-        audio.pause();
-        playButton.innerHTML = `
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-            <polygon points="5 3 19 12 5 21 5 3"></polygon>
-          </svg>
-        `;
-      }
+    audio.addEventListener('loadedmetadata', () => {
+      totalDuration = audio.duration;
+      duration.textContent = formatDuration(totalDuration);
+    });
+    
+    audio.addEventListener('timeupdate', () => {
+      currentTime = audio.currentTime;
+      const progress = currentTime / totalDuration;
+      
+      // Mettre à jour la forme d'onde pour montrer le progrès
+      waveformBars.forEach((bar, index) => {
+        if (index / barCount <= progress) {
+          bar.classList.remove('bg-opacity-40', 'bg-[#8696a0]');
+          bar.classList.add(message.isMe ? 'bg-white' : 'bg-[#00a884]');
+        } else {
+          bar.classList.remove('bg-white', 'bg-[#00a884]');
+          bar.classList.add(message.isMe ? 'bg-white bg-opacity-40' : 'bg-[#8696a0]');
+        }
+      });
+      
+      // Mettre à jour la durée affichée
+      const remaining = totalDuration - currentTime;
+      duration.textContent = formatDuration(remaining);
+    });
+    
+    audio.addEventListener('ended', () => {
+      isPlaying = false;
+      playButton.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" class="ml-0.5">
+          <polygon points="5 3 19 12 5 21 5 3"></polygon>
+        </svg>
+      `;
+      
+      // Réinitialiser la forme d'onde
+      waveformBars.forEach(bar => {
+        bar.classList.remove('bg-white', 'bg-[#00a884]');
+        bar.classList.add(message.isMe ? 'bg-white bg-opacity-40' : 'bg-[#8696a0]');
+      });
+      
+      duration.textContent = formatDuration(totalDuration);
     });
   }
-
-  voiceContainer.appendChild(playButton);
-  voiceContainer.appendChild(waveform);
-  voiceContainer.appendChild(duration);
   
+  // Événement de clic sur le bouton play/pause
+  playButton.addEventListener('click', () => {
+    if (!audio) return;
+    
+    if (isPlaying) {
+      audio.pause();
+      isPlaying = false;
+      playButton.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" class="ml-0.5">
+          <polygon points="5 3 19 12 5 21 5 3"></polygon>
+        </svg>
+      `;
+    } else {
+      audio.play();
+      isPlaying = true;
+      playButton.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+          <rect x="6" y="4" width="4" height="16"></rect>
+          <rect x="14" y="4" width="4" height="16"></rect>
+        </svg>
+      `;
+    }
+  });
+  
+  // Événement de clic sur la forme d'onde pour naviguer
+  waveform.addEventListener('click', (e) => {
+    if (!audio) return;
+    
+    const rect = waveform.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const progress = clickX / rect.width;
+    const newTime = progress * totalDuration;
+    
+    audio.currentTime = newTime;
+  });
+
   return voiceContainer;
+}
+
+// Fonction utilitaire pour formater la durée
+function formatDuration(seconds) {
+  if (isNaN(seconds) || seconds < 0) return '0:00';
+  
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = Math.floor(seconds % 60);
+  return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
 }
 
 function createFileMessageElement(message) {
