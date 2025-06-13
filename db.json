@@ -675,6 +675,46 @@
       "sent": true,
       "delivered": false,
       "read": true
+    },
+    {
+      "id": "1749764454103",
+      "chatId": "1749633358808",
+      "text": "ghhjjkjj",
+      "timestamp": "21:40",
+      "isMe": true,
+      "sent": true,
+      "delivered": true,
+      "read": false
+    },
+    {
+      "id": "1749764459532",
+      "chatId": "1749633358808",
+      "text": "👍",
+      "timestamp": "21:40",
+      "isMe": false,
+      "sent": true,
+      "delivered": false,
+      "read": true
+    },
+    {
+      "id": "1749768016996",
+      "chatId": "1749633358808",
+      "text": "ghhjjkjj",
+      "timestamp": "22:40",
+      "isMe": true,
+      "sent": true,
+      "delivered": true,
+      "read": false
+    },
+    {
+      "id": "1749768028157",
+      "chatId": "1749633358808",
+      "text": "Je suis d'accord avec toi.",
+      "timestamp": "22:40",
+      "isMe": false,
+      "sent": true,
+      "delivered": false,
+      "read": true
     }
   ]
 }

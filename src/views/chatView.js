@@ -12,6 +12,7 @@ import {
   startRecordingTimer,
   stopRecordingTimer
 } from './chatView2.js';
+import { addMessage, getMessages } from '../models/messageModel.js';
 
 let emojiPicker = null;
 let isRecording = false;

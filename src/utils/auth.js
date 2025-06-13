@@ -88,62 +88,92 @@ export function formatPhoneNumber(phone, countryCode) {
  * @param {string} lastName 
  * @param {string} countryCode 
  */
-export function register(phoneNumber, firstName, lastName, countryCode = 'SN') {
-    const user = {
-        phone: phoneNumber,
-        firstName: firstName,
-        lastName: lastName,
-        name: `${firstName} ${lastName}`,
-        countryCode: countryCode,
-        registeredAt: new Date().toISOString(),
-        lastLogin: new Date().toISOString()
-    };
-
-    localStorage.setItem('whatsapp_user', JSON.stringify(user));
-}
-
-/**
- * Fonction de connexion
- * @param {string} phoneNumber - Numéro de téléphone de l'utilisateur
- * @param {string} countryCode - Code du pays
- */
 const API_URL = 'https://serveur2.onrender.com';
 
+export async function register(phoneNumber, firstName, lastName, countryCode = 'SN') {
+    try {
+        const user = {
+            id: Date.now().toString(),
+            phone: phoneNumber,
+            firstName: firstName,
+            lastName: lastName,
+            name: `${firstName} ${lastName}`,
+            countryCode: countryCode,
+            status: "Hey! J'utilise WhatsApp",
+            online: false,
+            avatar: `https://api.dicebear.com/6.x/initials/svg?seed=${firstName} ${lastName}`,
+            registeredAt: new Date().toISOString(),
+            lastLogin: new Date().toISOString()
+        };
+
+        // Sauvegarder sur le serveur distant
+        const response = await fetch(`${API_URL}/contacts`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(user)
+        });
+
+        if (!response.ok) {
+            throw new Error('Erreur lors de l\'inscription');
+        }
+
+        const savedUser = await response.json();
+
+        // Sauvegarder en local pour la session
+        localStorage.setItem('whatsapp_user', JSON.stringify(savedUser));
+
+        return savedUser;
+    } catch (error) {
+        console.error('Erreur d\'inscription:', error);
+        throw error;
+    }
+}
+
 export async function login(phoneNumber, countryCode = 'SN') {
-  try {
-    const response = await fetch(`${API_URL}/contacts`);
-    if (!response.ok) {
-      throw new Error('Erreur de connexion au serveur');
+    try {
+        const response = await fetch(`${API_URL}/contacts`);
+        if (!response.ok) {
+            throw new Error('Erreur de connexion au serveur');
+        }
+        
+        const contacts = await response.json();
+        
+        // Nettoyer les numéros pour la comparaison
+        const cleanInputPhone = phoneNumber.replace(/\s+/g, '');
+        
+        const user = contacts.find(c => {
+            const cleanContactPhone = c.phone.replace(/\s+/g, '');
+            return cleanContactPhone === cleanInputPhone;
+        });
+
+        if (!user) {
+            throw new Error('Numéro non enregistré');
+        }
+
+        // Mise à jour du lastLogin sur le serveur
+        await fetch(`${API_URL}/contacts/${user.id}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                lastLogin: new Date().toISOString()
+            })
+        });
+
+        // Stocker les infos utilisateur
+        localStorage.setItem('whatsapp_user', JSON.stringify({
+            ...user,
+            lastLogin: new Date().toISOString()
+        }));
+
+        return user;
+    } catch (error) {
+        console.error('Erreur de connexion:', error);
+        throw error;
     }
-    
-    const contacts = await response.json();
-    
-    // Nettoyer les numéros pour la comparaison
-    const cleanInputPhone = phoneNumber.replace(/\s+/g, '');
-    
-    const user = contacts.find(c => {
-      const cleanContactPhone = c.phone.replace(/\s+/g, '');
-      return cleanContactPhone === cleanInputPhone;
-    });
-
-    if (!user) {
-      throw new Error('Numéro non enregistré');
-    }
-
-    // Stocker les infos utilisateur
-    localStorage.setItem('whatsapp_user', JSON.stringify({
-      id: user.id,
-      phone: phoneNumber, 
-      name: user.name,
-      countryCode: countryCode,
-      lastLogin: new Date().toISOString()
-    }));
-
-    return user;
-  } catch (error) {
-    console.error('Erreur de connexion:', error);
-    throw error;
-  }
 }
 
 /**

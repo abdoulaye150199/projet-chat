@@ -1,5 +1,5 @@
 import { getAllChats, getChatById, searchChats, markAsRead, createNewChat, createNewGroup } from '../models/chatModel.js';
-import { getMessagesByChatId, addMessage, markMessagesAsRead, markMessagesAsDelivered } from '../models/messageModel.js';
+import { addMessage, getMessagesByChatId, getMessages } from '../models/messageModel.js'; // Ajout de l'import
 import { renderChatList, updateChatInList } from '../views/chatListView.js';
 import { 
   renderChatHeader, 
@@ -55,7 +55,7 @@ async function handleNewChat(contact) {
     // Masquer la vue des nouvelles discussions
     hideNewDiscussionView();
 
-    // Définir le chat actif AVANT de mettre à jour l'interface
+    // Définir le chat actif
     activeChat = chat;
     window.activeChat = chat;
 
@@ -66,17 +66,15 @@ async function handleNewChat(contact) {
     renderChatHeader(chat);
     
     // Récupérer et afficher les messages
-    const messages = getMessagesByChatId(chat.id) || [];
-    renderMessages(messages);
+    const messages = await getMessages(chat.id); // Utilisation de getMessages à la place
+    renderMessages(messages || []);
 
     // Marquer les messages comme lus
-    markMessagesAsRead(chat.id);
+    markAsRead(chat.id);
 
     // Mettre à jour la liste des chats
     const allChats = getAllChats();
     renderChatList(allChats, handleChatClick);
-
-    console.log('Chat activé avec succès:', chat.name);
 
   } catch (error) {
     console.error('Erreur handleNewChat:', error);

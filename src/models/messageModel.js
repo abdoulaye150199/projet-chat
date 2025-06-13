@@ -1,7 +1,6 @@
 import { updateLastMessage, createNewChat, getAllChats, getChatById } from './chatModel.js';
 
-// Define API_URL constant
-const API_URL = 'http://localhost:3000';
+const API_URL = 'https://serveur2.onrender.com';
 
 // Initialiser un objet vide pour les messages
 let messages = {};
@@ -38,7 +37,20 @@ async function addMessage(chatId, text, isMe = true) {
       read: isMe ? false : true
     };
 
-    // Ajouter le message localement d'abord
+    // Envoyer le message au serveur
+    const response = await fetch(`${API_URL}/messages`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(message)
+    });
+
+    if (!response.ok) {
+      throw new Error('Erreur lors de l\'envoi du message');
+    }
+
+    // Mettre à jour le localStorage
     loadMessages();
     if (!messages[chatId]) {
       messages[chatId] = [];
@@ -46,63 +58,80 @@ async function addMessage(chatId, text, isMe = true) {
     messages[chatId].push(message);
     saveMessages();
 
-    // Essayer d'ajouter à l'API
-    try {
-      const response = await fetch(`${API_URL}/messages`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(message)
-      });
-
-      if (!response.ok) {
-        console.warn('Erreur API, message sauvegardé localement seulement');
-      }
-    } catch (apiError) {
-      console.warn('API non disponible, message sauvegardé localement:', apiError);
-    }
-
-    // Mettre à jour le dernier message du chat
+    // Mettre à jour le dernier message dans le chat
     await updateLastMessage(chatId, text);
-    
-    return message;
 
+    return message;
   } catch (error) {
     console.error('Erreur addMessage:', error);
-    return null;
+    throw error;
   }
 }
 
-// Marquer les messages comme lus
-function markMessagesAsRead(chatId) {
-  loadMessages();
-  if (messages[chatId]) {
-    messages[chatId].forEach(message => {
-      if (!message.isMe) {
-        message.read = true;
-      }
-    });
-    saveMessages();
+// Ajouter cette nouvelle fonction
+async function getMessages(chatId) {
+  try {
+    const response = await fetch(`${API_URL}/messages`);
+    if (!response.ok) {
+      throw new Error('Erreur lors de la récupération des messages');
+    }
+    const messages = await response.json();
+    return messages.filter(msg => msg.chatId === chatId);
+  } catch (error) {
+    console.error('Erreur getMessages:', error);
+    throw error;
   }
 }
 
-// Marquer les messages comme livrés
-function markMessagesAsDelivered(chatId) {
-  loadMessages();
-  if (messages[chatId]) {
-    messages[chatId].forEach(message => {
+// Ajouter cette nouvelle fonction
+async function markMessagesAsDelivered(chatId) {
+  try {
+    // Récupérer tous les messages du chat
+    const messages = await getMessages(chatId);
+    
+    // Marquer comme livrés uniquement les messages non livrés
+    const updatedMessages = messages.map(message => {
       if (message.isMe && !message.delivered) {
-        message.delivered = true;
+        return {
+          ...message,
+          delivered: true
+        };
       }
+      return message;
     });
+
+    // Mettre à jour les messages sur le serveur
+    for (const message of updatedMessages) {
+      if (message.isMe && !message.delivered) {
+        await fetch(`${API_URL}/messages/${message.id}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            delivered: true
+          })
+        });
+      }
+    }
+
+    // Mettre à jour le localStorage
+    loadMessages();
+    messages[chatId] = updatedMessages;
     saveMessages();
+
+    return updatedMessages;
+  } catch (error) {
+    console.error('Erreur markMessagesAsDelivered:', error);
+    throw error;
   }
 }
 
 export {
-  getMessagesByChatId,
   addMessage,
-  markMessagesAsRead,
-  markMessagesAsDelivered
+  getMessagesByChatId,
+  loadMessages,
+  saveMessages,
+  getMessages,
+  markMessagesAsDelivered  // Ajouter cette exportation
 };

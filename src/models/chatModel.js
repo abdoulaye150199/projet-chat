@@ -346,87 +346,42 @@ async function createNewGroup(groupData) {
   }
 }
 
-// Fonction améliorée pour updateLastMessage
-async function updateLastMessage(chatId, message) {
+// Ne pas exporter cette fonction
+async function updateLastMessage(chatId, text) {
   try {
-    const idStr = String(chatId);
-    const idNum = Number(chatId);
-    
-    loadChats();
-    let chat = chats.find(c => 
-      String(c.id) === idStr || Number(c.id) === idNum
-    );
-    
-    const timestamp = new Date().toLocaleTimeString('fr-FR', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
+    const response = await fetch(`${API_URL}/chats/${chatId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        lastMessage: text,
+        timestamp: new Date().toLocaleTimeString('fr-FR', {
+          hour: '2-digit',
+          minute: '2-digit'
+        })
+      })
     });
 
-    if (!chat) {
-      // Create new chat if it doesn't exist
-      chat = {
-        id: idNum,
-        name: 'Nouvelle discussion',
-        lastMessage: message,
-        timestamp: timestamp,
-        unreadCount: 0,
-        avatar: `https://api.dicebear.com/6.x/initials/svg?seed=${chatId}`,
-        online: false,
-        status: "Hey! J'utilise WhatsApp",
-        messages: []
-      };
-      chats.push(chat);
-    } else {
-      // Update existing chat
-      chat.lastMessage = message;
-      chat.timestamp = timestamp;
+    if (!response.ok) {
+      throw new Error('Erreur lors de la mise à jour du dernier message');
     }
-
-    // Save locally first
-    saveChats();
-
-    try {
-      // Try to create/update in API
-      const response = await fetch(`${API_URL}/chats`, {
-        method: 'POST', // Always use POST to create/update
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(chat)
-      });
-
-      if (response.ok) {
-        const apiChat = await response.json();
-        const index = chats.findIndex(c => 
-          String(c.id) === idStr || Number(c.id) === idNum
-        );
-        if (index !== -1) {
-          chats[index] = apiChat;
-          saveChats();
-        }
-        return apiChat;
-      }
-    } catch (apiError) {
-      console.warn('API sync failed for updateLastMessage:', apiError);
-    }
-
-    return chat; // Return local chat if API sync fails
   } catch (error) {
-    console.error('Error updating last message:', error);
-    return null;
+    console.error('Erreur updateLastMessage:', error);
+    throw error;
   }
 }
 
-// Les exports restent les mêmes
+// Garder uniquement l'exportation dans l'objet d'export
 export {
   getAllChats,
   getChatById,
   searchChats,
   markAsRead,
-  getAllContacts,
+  getAllContacts, 
   searchContacts,
   createNewChat,
   addNewContact,
-  updateLastMessage,
+  updateLastMessage,  // Une seule exportation ici
   createNewGroup
 };
