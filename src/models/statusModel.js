@@ -1,40 +1,81 @@
-const API_URL = 'https://serveur2.onrender.com';
+const API_URL = 'http://localhost:3000';
 
 let statuses = [];
 
 function loadStatuses() {
-  const savedStatuses = localStorage.getItem('statuses');
-  if (savedStatuses) {
-    statuses = JSON.parse(savedStatuses);
+  try {
+    const savedStatuses = localStorage.getItem('whatsapp_statuses');
+    if (savedStatuses) {
+      const parsedStatuses = JSON.parse(savedStatuses);
+      // Filtrer les statuts expirés (plus de 24h)
+      const now = Date.now();
+      statuses = parsedStatuses.filter(status => {
+        const expirationTime = new Date(status.expiresAt).getTime();
+        return now < expirationTime;
+      });
+      // Sauvegarder après nettoyage
+      saveStatuses();
+    }
+  } catch (error) {
+    console.error('Erreur lors du chargement des statuts:', error);
+    statuses = [];
   }
 }
 
 function saveStatuses() {
-  localStorage.setItem('statuses', JSON.stringify(statuses));
+  try {
+    localStorage.setItem('whatsapp_statuses', JSON.stringify(statuses));
+  } catch (error) {
+    console.error('Erreur lors de la sauvegarde des statuts:', error);
+  }
 }
 
 async function addStatus(status) {
   const newStatus = {
-    id: Date.now(),
+    id: Date.now().toString(),
     userId: status.userId,
     content: status.content,
-    type: status.type, // 'text', 'image', ou 'video'
-    timestamp: new Date().toISOString(),
-    views: [],
-    expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // Expire après 24h
+    type: status.type,
+    backgroundColor: status.backgroundColor || '#00a884',
+    caption: status.caption || '',
+    createdAt: new Date().toISOString(),
+    expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+    viewedBy: [],
+    isOwn: true
   };
 
-  statuses.unshift(newStatus);
-  saveStatuses();
+  try {
+    // Ajouter au stockage local
+    statuses.unshift(newStatus);
+    saveStatuses();
 
-  return newStatus;
+    // Ajouter à l'API
+    const response = await fetch(`${API_URL}/statuses`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(newStatus)
+    });
+
+    if (!response.ok) {
+      throw new Error('Erreur lors de l\'ajout du statut');
+    }
+
+    return newStatus;
+  } catch (error) {
+    console.error('Erreur lors de l\'ajout du statut:', error);
+    throw error;
+  }
 }
 
 function getMyStatuses(userId) {
+  loadStatuses(); // Recharger et nettoyer les statuts expirés
   return statuses.filter(status => status.userId === userId);
 }
 
 function getContactStatuses(contactIds) {
+  loadStatuses(); // Recharger et nettoyer les statuts expirés
   return statuses.filter(status => contactIds.includes(status.userId));
 }
 

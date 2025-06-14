@@ -1,3 +1,5 @@
+import { generateRandomAvatar } from '../utils/helpers.js';
+
 // Function to render the chat list
 function renderChatList(chats = [], onChatClick) {
   const chatListElement = document.getElementById('chat-list');
@@ -34,7 +36,7 @@ function createChatElement(chat) {
   avatarImg.className = 'w-full h-full object-cover';
   avatarImg.onerror = () => {
     // Fallback to generated avatar if loading fails
-    avatarImg.src = generateRandomAvatar(chat.name);
+    avatarImg.src = generateRandomAvatar(chat.name).dataUrl;
   };
   
   avatar.appendChild(avatarImg);

@@ -1,3 +1,12 @@
+// Configuration des URLs d'API
+const API_CONFIG = {
+    LOCAL: 'http://localhost:3000',
+    PRODUCTION: 'https://serveur2.onrender.com'
+};
+
+// Utiliser l'URL locale en développement
+const API_URL = 'http://localhost:3000';
+
 // Utilitaires pour la gestion de l'authentification
 
 /**
@@ -88,40 +97,54 @@ export function formatPhoneNumber(phone, countryCode) {
  * @param {string} lastName 
  * @param {string} countryCode 
  */
-const API_URL = 'https://serveur2.onrender.com';
-
 export async function register(phoneNumber, firstName, lastName, countryCode = 'SN') {
     try {
-        const user = {
+        // Formater le numéro de téléphone
+        const formattedPhone = phoneNumber.startsWith('+') ? phoneNumber : `+${countryCode}${phoneNumber}`;
+
+        // Créer le nouvel utilisateur avec la structure exacte
+        const newUser = {
             id: Date.now().toString(),
-            phone: phoneNumber,
-            firstName: firstName,
-            lastName: lastName,
+            phone: formattedPhone,
+            firstName,
+            lastName,
             name: `${firstName} ${lastName}`,
-            countryCode: countryCode,
+            countryCode,
             status: "Hey! J'utilise WhatsApp",
-            online: false,
+            online: true,
             avatar: `https://api.dicebear.com/6.x/initials/svg?seed=${firstName} ${lastName}`,
             registeredAt: new Date().toISOString(),
-            lastLogin: new Date().toISOString()
+            lastLogin: new Date().toISOString(),
+            lastSeen: new Date().toISOString(),
+            isOnline: true,
+            createdAt: new Date().toISOString()
         };
 
-        // Sauvegarder sur le serveur distant
-        const response = await fetch(`${API_URL}/contacts`, {
+        // Vérifier si l'utilisateur existe déjà
+        const response = await fetch(`${API_URL}/users`);
+        if (!response.ok) {
+            throw new Error('Erreur de connexion au serveur');
+        }
+        
+        const users = await response.json();
+        if (users.some(user => user.phone === formattedPhone)) {
+            throw new Error('Ce numéro est déjà inscrit');
+        }
+
+        // Ajouter l'utilisateur à la base de données
+        const saveResponse = await fetch(`${API_URL}/users`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(user)
+            body: JSON.stringify(newUser)
         });
 
-        if (!response.ok) {
-            throw new Error('Erreur lors de l\'inscription');
+        if (!saveResponse.ok) {
+            throw new Error('Erreur lors de l\'enregistrement');
         }
 
-        const savedUser = await response.json();
-
-        // Sauvegarder en local pour la session
+        const savedUser = await saveResponse.json();
         localStorage.setItem('whatsapp_user', JSON.stringify(savedUser));
 
         return savedUser;
@@ -133,43 +156,54 @@ export async function register(phoneNumber, firstName, lastName, countryCode = '
 
 export async function login(phoneNumber, countryCode = 'SN') {
     try {
-        const response = await fetch(`${API_URL}/contacts`);
+        // Récupérer la liste des utilisateurs au lieu des contacts
+        const response = await fetch(`${API_URL}/users`);
         if (!response.ok) {
             throw new Error('Erreur de connexion au serveur');
         }
         
-        const contacts = await response.json();
+        const users = await response.json();
         
-        // Nettoyer les numéros pour la comparaison
+        // Nettoyer et formater le numéro de téléphone pour la comparaison
         const cleanInputPhone = phoneNumber.replace(/\s+/g, '');
         
-        const user = contacts.find(c => {
-            const cleanContactPhone = c.phone.replace(/\s+/g, '');
-            return cleanContactPhone === cleanInputPhone;
+        const user = users.find(u => {
+            if (!u || !u.phone) return false;
+            const cleanUserPhone = u.phone.replace(/\s+/g, '');
+            return cleanUserPhone === cleanInputPhone;
         });
 
         if (!user) {
-            throw new Error('Numéro non enregistré');
+            throw new Error(`Numéro ${phoneNumber} non enregistré. Veuillez vous inscrire.`);
         }
 
         // Mise à jour du lastLogin sur le serveur
-        await fetch(`${API_URL}/contacts/${user.id}`, {
+        const updateResponse = await fetch(`${API_URL}/users/${user.id}`, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                lastLogin: new Date().toISOString()
+                lastLogin: new Date().toISOString(),
+                isOnline: true
             })
         });
 
-        // Stocker les infos utilisateur
-        localStorage.setItem('whatsapp_user', JSON.stringify({
-            ...user,
-            lastLogin: new Date().toISOString()
-        }));
+        if (!updateResponse.ok) {
+            console.warn('Erreur lors de la mise à jour du lastLogin');
+        }
 
-        return user;
+        // Mettre à jour les données en local
+        const updatedUser = {
+            ...user,
+            lastLogin: new Date().toISOString(),
+            isOnline: true
+        };
+
+        // Stocker les infos utilisateur
+        localStorage.setItem('whatsapp_user', JSON.stringify(updatedUser));
+
+        return updatedUser;
     } catch (error) {
         console.error('Erreur de connexion:', error);
         throw error;
