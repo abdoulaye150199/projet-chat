@@ -8,12 +8,12 @@
       "name": "AbdAllah User",
       "countryCode": "SN",
       "status": "Hey! J'utilise WhatsApp",
-      "online": true,
+      "online": false,
       "avatar": "https://api.dicebear.com/6.x/initials/svg?seed=AbdAllah User",
       "registeredAt": "2024-01-01T00:00:00.000Z",
-      "lastLogin": "2025-06-14T12:54:48.486Z",
-      "lastSeen": "2024-01-01T00:00:00.000Z",
-      "isOnline": true,
+      "lastLogin": "2025-06-14T13:35:02.996Z",
+      "lastSeen": "2025-06-14T14:29:29.506Z",
+      "isOnline": false,
       "createdAt": "2024-01-01T00:00:00.000Z"
     },
     {
@@ -24,12 +24,12 @@
       "name": "Dié Niang",
       "countryCode": "SN",
       "status": "Hey! J'utilise WhatsApp",
-      "online": true,
+      "online": false,
       "avatar": "https://api.dicebear.com/6.x/initials/svg?seed=Dié Niang",
       "registeredAt": "2025-06-14T12:53:29.434Z",
-      "lastLogin": "2025-06-14T12:55:18.865Z",
-      "lastSeen": "2025-06-14T12:53:29.434Z",
-      "isOnline": true,
+      "lastLogin": "2025-06-14T13:34:23.201Z",
+      "lastSeen": "2025-06-14T13:34:42.004Z",
+      "isOnline": false,
       "createdAt": "2025-06-14T12:53:29.434Z"
     }
   ],
@@ -94,6 +94,42 @@
         "1749905609434",
         "1"
       ]
+    },
+    {
+      "id": 1749907182215,
+      "contactId": "1749905609434",
+      "name": "Dié Niang",
+      "lastMessage": "",
+      "timestamp": "13:19:42",
+      "unreadCount": 0,
+      "avatar": "https://api.dicebear.com/6.x/initials/svg?seed=Dié Niang",
+      "online": true,
+      "status": "Hey! J'utilise WhatsApp",
+      "messages": [],
+      "isGroup": false,
+      "participants": [
+        "1749692865615",
+        "1749905609434"
+      ]
+    },
+    {
+      "id": 1749909047017,
+      "name": "GE",
+      "description": "",
+      "avatar": "data:image/png;base64,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",
+      "isGroup": true,
+      "participants": [
+        "1",
+        "1749905609434"
+      ],
+      "admin": "1",
+      "createdAt": "2025-06-14T13:50:47.016Z",
+      "lastMessage": "Groupe créé par AbdAllah User",
+      "timestamp": "13:50",
+      "unreadCount": 0,
+      "online": false,
+      "status": "2 participants",
+      "messages": []
     }
   ],
   "messages": [
@@ -119,9 +155,35 @@
       "senderName": "AbdAllah User",
       "isMe": true,
       "sent": true,
-      "delivered": false,
+      "delivered": true,
       "read": false,
       "createdAt": "2025-06-14T12:53:58.684Z"
+    },
+    {
+      "id": "1749907185651",
+      "chatId": 1749907182215,
+      "text": "slt",
+      "timestamp": "13:19",
+      "senderId": "1749692865615",
+      "senderName": "Fallou Senghor",
+      "isMe": true,
+      "sent": true,
+      "delivered": false,
+      "read": false,
+      "createdAt": "2025-06-14T13:19:45.652Z"
+    },
+    {
+      "id": "1749907281017",
+      "chatId": 1749907182215,
+      "text": "bonjour",
+      "timestamp": "13:21",
+      "senderId": "1749905609434",
+      "senderName": "Dié Niang",
+      "isMe": true,
+      "sent": true,
+      "delivered": true,
+      "read": false,
+      "createdAt": "2025-06-14T13:21:21.017Z"
     }
   ],
   "statuses": []

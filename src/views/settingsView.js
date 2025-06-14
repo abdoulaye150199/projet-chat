@@ -1,4 +1,4 @@
-import { getCurrentUser } from '../models/userModel.js';
+import { getCurrentUser, updateUserProfile } from '../models/userModel.js';
 import { logout } from '../utils/auth.js';
 
 function renderSettingsView() {
@@ -67,15 +67,15 @@ function renderSettingsView() {
   profileSection.innerHTML = `
     <div class="w-16 h-16 rounded-full overflow-hidden mr-4">
       <img 
-        src="./src/assets/images/profile.jpeg" 
+        src="${currentUser.avatar}" 
         alt="Photo de profil"
         class="w-full h-full object-cover"
-        onerror="this.src='https://via.placeholder.com/160?text=U'"
+        onerror="this.src='https://api.dicebear.com/6.x/initials/svg?seed=${currentUser.name}'"
       />
     </div>
     <div>
-      <h3 class="text-white text-lg" id="profile-name">AbdAllah</h3>
-      <p class="text-gray-400">Salut ! J'utilise WhatsApp.</p>
+      <h3 class="text-white text-lg" id="profile-name">${currentUser.name}</h3>
+      <p class="text-gray-400" id="profile-status">${currentUser.status}</p>
     </div>
   `;
   

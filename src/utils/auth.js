@@ -36,6 +36,12 @@ export function getSessionData() {
  */
 export function logout() {
   try {
+    // Mettre à jour le statut en ligne de l'utilisateur
+    const currentUser = getCurrentUser();
+    if (currentUser && currentUser.id) {
+        updateUserOnlineStatus(currentUser.id, false);
+    }
+    
     localStorage.removeItem('whatsapp_user');
     sessionStorage.clear();
     window.location.replace('./login.html');
@@ -185,7 +191,8 @@ export async function login(phoneNumber, countryCode = 'SN') {
             },
             body: JSON.stringify({
                 lastLogin: new Date().toISOString(),
-                isOnline: true
+                isOnline: true,
+                online: true
             })
         });
 
@@ -197,7 +204,8 @@ export async function login(phoneNumber, countryCode = 'SN') {
         const updatedUser = {
             ...user,
             lastLogin: new Date().toISOString(),
-            isOnline: true
+            isOnline: true,
+            online: true
         };
 
         // Stocker les infos utilisateur
@@ -217,18 +225,48 @@ export async function login(phoneNumber, countryCode = 'SN') {
 export function getCurrentUser() {
     try {
         const userData = localStorage.getItem('whatsapp_user');
-        return userData ? JSON.parse(userData) : {
+        if (userData) {
+            return JSON.parse(userData);
+        }
+        
+        // Fallback par défaut si aucun utilisateur connecté
+        return {
             id: 1,
-            name: 'AbdAllah',
-            phone: '+221 77 123 45 67'
+            name: 'Utilisateur',
+            phone: '+221 77 123 45 67',
+            avatar: 'https://api.dicebear.com/6.x/initials/svg?seed=Utilisateur',
+            status: "Hey! J'utilise WhatsApp"
         };
     } catch (error) {
         console.error('Erreur lors de la récupération de l\'utilisateur:', error);
         return {
             id: 1,
-            name: 'AbdAllah',
-            phone: '+221 77 123 45 67'
+            name: 'Utilisateur',
+            phone: '+221 77 123 45 67',
+            avatar: 'https://api.dicebear.com/6.x/initials/svg?seed=Utilisateur',
+            status: "Hey! J'utilise WhatsApp"
         };
+    }
+}
+
+/**
+ * Met à jour le statut en ligne d'un utilisateur
+ */
+export async function updateUserOnlineStatus(userId, isOnline) {
+    try {
+        await fetch(`${API_URL}/users/${userId}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                isOnline: isOnline,
+                online: isOnline,
+                lastSeen: new Date().toISOString()
+            })
+        });
+    } catch (error) {
+        console.error('Erreur lors de la mise à jour du statut:', error);
     }
 }
 
