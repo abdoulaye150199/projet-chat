@@ -1,16 +1,16 @@
-import { getAllContacts, addNewContact, searchContacts } from '../models/chatModel.js';
+import { getAllContacts, searchContacts } from '../models/chatModel.js';
 import { renderAddContactModal } from './addContactModalView.js';
 import { renderCreateGroupModal } from './createGroupModalView.js';
 import { generateInitialsAvatar } from '../utils/avatarGenerator.js';
 
-let currentContacts = []; // Variable globale pour stocker les contacts actuels
+let currentContacts = [];
 
 async function renderContacts(contacts, onContactSelect) {
   const contactsList = document.getElementById('contacts-list');
   if (!contactsList) return;
 
   const contactsArray = Array.isArray(contacts) ? contacts : [];
-  currentContacts = contactsArray; // Stocker les contacts dans la variable globale
+  currentContacts = contactsArray;
 
   if (contactsArray.length === 0) {
     contactsList.innerHTML = `
@@ -21,8 +21,8 @@ async function renderContacts(contacts, onContactSelect) {
             <circle cx="12" cy="7" r="4"></circle>
           </svg>
         </div>
-        <h3 class="text-white text-lg mb-2">Aucun contact</h3>
-        <p class="text-gray-400 text-sm">Ajoutez des contacts pour commencer à discuter</p>
+        <h3 class="text-white text-lg mb-2">Aucun contact disponible</h3>
+        <p class="text-gray-400 text-sm">Les utilisateurs inscrits apparaîtront ici</p>
       </div>
     `;
     return;
@@ -35,12 +35,14 @@ async function renderContacts(contacts, onContactSelect) {
     
     return `
       <div class="contact-item flex items-center p-3 hover:bg-[#202c33] cursor-pointer transition-colors" data-contact-id="${contact.id}">
-        <div class="w-12 h-12 rounded-full mr-4 overflow-hidden">
+        <div class="w-12 h-12 rounded-full mr-4 overflow-hidden relative">
           <img src="${avatarData.dataUrl}" alt="${contact.name}" class="w-full h-full object-cover">
+          ${contact.online ? '<div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-[#111b21]"></div>' : ''}
         </div>
         <div class="flex-1">
           <h3 class="text-white contact-name">${contact.name}</h3>
           <p class="text-gray-400 text-sm">${contact.status || "Hey! J'utilise WhatsApp"}</p>
+          <p class="text-gray-500 text-xs">${contact.phone}</p>
         </div>
         <div class="text-gray-400">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -98,12 +100,11 @@ export async function renderNewDiscussionView(onContactSelect) {
       </button>
       <h2 class="text-white text-xl font-medium">Nouvelle discussion</h2>
     </div>
-    <button id="add-contact-btn" class="flex items-center text-[#00a884] hover:text-[#06cf9c] transition-colors">
+    <button id="refresh-contacts-btn" class="flex items-center text-[#00a884] hover:text-[#06cf9c] transition-colors" title="Actualiser les contacts">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-        <circle cx="9" cy="7" r="4"></circle>
-        <line x1="19" y1="8" x2="19" y2="14"></line>
-        <line x1="16" y1="11" x2="22" y2="11"></line>
+        <polyline points="23 4 23 10 17 10"></polyline>
+        <polyline points="1 20 1 14 7 14"></polyline>
+        <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path>
       </svg>
     </button>
   `;
@@ -119,7 +120,7 @@ export async function renderNewDiscussionView(onContactSelect) {
       <input
         type="text"
         id="contact-search"
-        placeholder="Rechercher un contact"
+        placeholder="Rechercher un utilisateur inscrit"
         class="bg-transparent border-none outline-none text-white w-full"
       />
     </div>
@@ -140,21 +141,18 @@ export async function renderNewDiscussionView(onContactSelect) {
       </div>
       <span class="text-white">Nouveau groupe</span>
     </div>
-
-    <div id="new-community-btn" class="cursor-pointer hover:bg-[#202c33] p-3 flex items-center transition-colors">
-      <div class="w-12 h-12 rounded-full bg-[#00a884] flex items-center justify-center mr-4">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"></path>
-        </svg>
-      </div>
-      <span class="text-white">Nouvelle communauté</span>
-    </div>
   `;
 
-  // Contacts list
+  // Contacts list with loading indicator
   const contactsList = document.createElement('div');
   contactsList.id = 'contacts-list';
   contactsList.className = 'flex-1 overflow-y-auto';
+  contactsList.innerHTML = `
+    <div class="flex flex-col items-center justify-center p-8 text-center">
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00a884] mb-4"></div>
+      <p class="text-gray-400">Chargement des utilisateurs inscrits...</p>
+    </div>
+  `;
   
   // Assemble the view
   container.appendChild(header);
@@ -169,22 +167,33 @@ export async function renderNewDiscussionView(onContactSelect) {
   const backButton = container.querySelector('#new-discussion-back-btn');
   backButton.addEventListener('click', hideNewDiscussionView);
   
-  const addContactBtn = container.querySelector('#add-contact-btn');
-  addContactBtn.addEventListener('click', handleAddContact);
+  const refreshButton = container.querySelector('#refresh-contacts-btn');
+  refreshButton.addEventListener('click', () => loadContacts(onContactSelect));
 
   const newGroupBtn = container.querySelector('#new-group-btn');
   newGroupBtn.addEventListener('click', handleNewGroup);
-
-  const newCommunityBtn = container.querySelector('#new-community-btn');
-  newCommunityBtn.addEventListener('click', handleNewCommunity);
 
   // Initialize events
   initNewDiscussionEvents(onContactSelect);
   
   // Load and render contacts
+  await loadContacts(onContactSelect);
+}
+
+async function loadContacts(onContactSelect) {
   try {
+    const contactsList = document.getElementById('contacts-list');
+    if (contactsList) {
+      contactsList.innerHTML = `
+        <div class="flex flex-col items-center justify-center p-8 text-center">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00a884] mb-4"></div>
+          <p class="text-gray-400">Chargement des utilisateurs inscrits...</p>
+        </div>
+      `;
+    }
+
     const contacts = await getAllContacts();
-    console.log('Contacts chargés:', contacts);
+    console.log('Utilisateurs inscrits chargés:', contacts);
     await renderContacts(contacts, onContactSelect);
   } catch (error) {
     console.error('Erreur lors du chargement des contacts:', error);
@@ -200,7 +209,10 @@ export async function renderNewDiscussionView(onContactSelect) {
             </svg>
           </div>
           <h3 class="text-white text-lg mb-2">Erreur de chargement</h3>
-          <p class="text-gray-400 text-sm">Impossible de charger les contacts</p>
+          <p class="text-gray-400 text-sm">Impossible de charger les utilisateurs inscrits</p>
+          <button onclick="loadContacts()" class="mt-4 px-4 py-2 bg-[#00a884] text-white rounded-lg hover:bg-[#06cf9c]">
+            Réessayer
+          </button>
         </div>
       `;
     }
@@ -218,19 +230,9 @@ export function hideNewDiscussionView() {
   }
 }
 
-function handleAddContact() {
-  renderAddContactModal();
-}
-
 async function handleNewGroup() {
   console.log('Création d\'un nouveau groupe');
   await renderCreateGroupModal();
-}
-
-function handleNewCommunity() {
-  console.log('Création d\'une nouvelle communauté');
-  // TODO: Implement community creation
-  showNotification('Fonctionnalité en cours de développement', 'info');
 }
 
 async function initNewDiscussionEvents(onContactSelect) {
