@@ -134,17 +134,30 @@ async function getMessagesForUser(userId) {
 async function getNotificationsForUser(userId) {
   try {
     const response = await fetch(`${API_URL}/notifications`);
+    if (response.status === 404) {
+      console.warn('Table notifications non trouvée, création...');
+      // Créer la table si elle n'existe pas
+      await fetch(`${API_URL}/notifications`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify([])
+      });
+      return [];
+    }
+
     if (!response.ok) {
       throw new Error('Erreur lors de la récupération des notifications');
     }
+
     const notifications = await response.json();
-    
     return notifications.filter(notif => 
       notif.recipientId === userId && !notif.read
     );
   } catch (error) {
-    console.error('Erreur getNotificationsForUser:', error);
-    return [];
+    console.warn('Erreur getNotificationsForUser:', error);
+    return []; // Retourner un tableau vide en cas d'erreur
   }
 }
 

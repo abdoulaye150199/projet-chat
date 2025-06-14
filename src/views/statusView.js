@@ -11,7 +11,9 @@ export function renderStatusView() {
 
   // Masquer la liste des chats
   const chatList = document.getElementById('chat-list-container');
-  chatList.style.display = 'none';
+  if (chatList) {
+    chatList.style.display = 'none';
+  }
   
   // Créer le conteneur des statuts
   const container = document.createElement('div');
@@ -79,7 +81,10 @@ export function renderStatusView() {
   container.appendChild(recentSection);
   
   // Ajouter au DOM
-  chatList.parentNode.insertBefore(container, chatList);
+  const chatListParent = chatList ? chatList.parentNode : document.querySelector('#chat-content');
+  if (chatListParent) {
+    chatListParent.insertBefore(container, chatList);
+  }
   
   // Initialiser les événements
   initStatusEvents();
@@ -90,13 +95,22 @@ export function renderStatusView() {
 
 function initStatusEvents() {
   // Bouton retour
-  document.getElementById('status-back-btn').addEventListener('click', hideStatusView);
+  const backBtn = document.getElementById('status-back-btn');
+  if (backBtn) {
+    backBtn.addEventListener('click', hideStatusView);
+  }
   
   // Bouton caméra
-  document.getElementById('camera-btn').addEventListener('click', openCamera);
+  const cameraBtn = document.getElementById('camera-btn');
+  if (cameraBtn) {
+    cameraBtn.addEventListener('click', openCamera);
+  }
   
   // Mon statut
-  document.getElementById('my-status').addEventListener('click', handleMyStatusClick);
+  const myStatusBtn = document.getElementById('my-status');
+  if (myStatusBtn) {
+    myStatusBtn.addEventListener('click', handleMyStatusClick);
+  }
 }
 
 function handleMyStatusClick() {
@@ -289,12 +303,14 @@ function loadAndRenderStatuses() {
   
   // Mettre à jour mon statut
   const myStatusText = document.getElementById('my-status-text');
-  if (myStatuses.length > 0) {
-    const latestStatus = myStatuses[0];
-    const timeAgo = getTimeAgo(latestStatus.createdAt);
-    myStatusText.textContent = `${timeAgo}`;
-  } else {
-    myStatusText.textContent = 'Appuyez pour ajouter un statut';
+  if (myStatusText) {
+    if (myStatuses.length > 0) {
+      const latestStatus = myStatuses[0];
+      const timeAgo = getTimeAgo(latestStatus.createdAt);
+      myStatusText.textContent = `${timeAgo}`;
+    } else {
+      myStatusText.textContent = 'Appuyez pour ajouter un statut';
+    }
   }
   
   // Afficher les statuts récents (pour l'instant, on simule avec des données)
@@ -303,6 +319,7 @@ function loadAndRenderStatuses() {
 
 function renderRecentStatuses() {
   const recentContainer = document.getElementById('recent-statuses');
+  if (!recentContainer) return;
   
   // Données simulées pour les statuts d'autres utilisateurs
   const mockStatuses = [
@@ -480,9 +497,5 @@ export function hideStatusView() {
   const container = document.getElementById('status-container');
   if (container) {
     container.remove();
-  }
-  const chatList = document.getElementById('chat-list-container');
-  if (chatList) {
-    chatList.style.display = 'flex';
   }
 }

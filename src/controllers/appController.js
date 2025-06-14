@@ -1,7 +1,7 @@
 import { getCurrentUser } from '../models/userModel.js';
 import { initChat } from './chatController.js';
-import { renderSettingsView } from '../views/settingsView.js';
-import { renderStatusView } from '../views/statusView.js';
+import { renderSettingsView, hideSettingsView } from '../views/settingsView.js';
+import { renderStatusView, hideStatusView } from '../views/statusView.js';
 import { initMenuController } from './menuController.js';
 import { initChatFilters } from '../views/chatView.js';
 import { initStatusController } from './statusController.js';
@@ -34,37 +34,66 @@ function initNavigation() {
 
   statusBtn.addEventListener('click', () => {
     switchTab('status');
+    hideAllViews();
     renderStatusView();
   });
   
-  channelsBtn.addEventListener('click', () => switchTab('channels'));
+  channelsBtn.addEventListener('click', () => {
+    switchTab('channels');
+    hideAllViews();
+    showChatList();
+  });
   
   chatsBtn.addEventListener('click', () => {
     switchTab('chats');
-    // Masquer les autres vues et afficher la liste des chats
     hideAllViews();
-    const chatList = document.getElementById('chat-list-container');
-    if (chatList) {
-      chatList.style.display = 'flex';
-    }
+    showChatList();
   });
   
-  communitiesBtn.addEventListener('click', () => switchTab('communities'));
+  communitiesBtn.addEventListener('click', () => {
+    switchTab('communities');
+    hideAllViews();
+    showChatList();
+  });
   
   settingsBtn.addEventListener('click', () => {
     switchTab('settings');
+    hideAllViews();
     renderSettingsView();
   });
 }
 
 function hideAllViews() {
-  const views = ['status-container', 'settings-container', 'new-discussion-container'];
+  // Masquer toutes les vues spéciales
+  hideStatusView();
+  hideSettingsView();
+  
+  // Masquer les autres conteneurs
+  const views = ['new-discussion-container'];
   views.forEach(viewId => {
     const view = document.getElementById(viewId);
     if (view) {
       view.remove();
     }
   });
+  
+  // Masquer l'interface de chat
+  const welcomeScreen = document.getElementById('welcome-screen');
+  const messagesContainer = document.getElementById('messages-container');
+  const chatHeader = document.getElementById('chat-header');
+  const messageInput = document.getElementById('message-input-container');
+
+  if (welcomeScreen) welcomeScreen.style.display = 'flex';
+  if (messagesContainer) messagesContainer.style.display = 'none';
+  if (chatHeader) chatHeader.style.display = 'none';
+  if (messageInput) messageInput.style.display = 'none';
+}
+
+function showChatList() {
+  const chatList = document.getElementById('chat-list-container');
+  if (chatList) {
+    chatList.style.display = 'flex';
+  }
 }
 
 function switchTab(tabName) {

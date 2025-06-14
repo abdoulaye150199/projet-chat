@@ -345,24 +345,31 @@ async function updateLastMessage(chatId, text) {
       saveChats();
     }
 
-    // Mettre à jour dans l'API
+    // Mettre à jour dans l'API seulement si le chat existe
     try {
-      const response = await fetch(`${API_URL}/chats/${chatId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          lastMessage: text,
-          timestamp: new Date().toLocaleTimeString('fr-FR', {
-            hour: '2-digit',
-            minute: '2-digit'
+      // D'abord vérifier si le chat existe dans l'API
+      const checkResponse = await fetch(`${API_URL}/chats/${chatId}`);
+      if (checkResponse.ok) {
+        // Le chat existe, on peut le mettre à jour
+        const updateResponse = await fetch(`${API_URL}/chats/${chatId}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            lastMessage: text,
+            timestamp: new Date().toLocaleTimeString('fr-FR', {
+              hour: '2-digit',
+              minute: '2-digit'
+            })
           })
-        })
-      });
+        });
 
-      if (!response.ok) {
-        console.warn('Failed to update last message in API');
+        if (!updateResponse.ok) {
+          console.warn('Failed to update last message in API');
+        }
+      } else {
+        console.warn('Chat not found in API, skipping update');
       }
     } catch (apiError) {
       console.warn('API error when updating last message:', apiError);

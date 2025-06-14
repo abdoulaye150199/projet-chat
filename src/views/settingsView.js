@@ -2,26 +2,17 @@ import { getCurrentUser, updateUserProfile } from '../models/userModel.js';
 import { logout } from '../utils/auth.js';
 
 function renderSettingsView() {
-  // Masquer les éléments de chat existants
-  const welcomeScreen = document.getElementById('welcome-screen');
-  const messagesContainer = document.getElementById('messages-container');
-  const chatHeader = document.getElementById('chat-header');
-  const messageInput = document.getElementById('message-input-container');
-
-  if (welcomeScreen) welcomeScreen.style.display = 'none';
-  if (messagesContainer) messagesContainer.style.display = 'none'; 
-  if (chatHeader) chatHeader.style.display = 'none';
-  if (messageInput) messageInput.style.display = 'none';
-
   // Vérifier si un conteneur de paramètres existe déjà
   const existingSettings = document.getElementById('settings-container');
   if (existingSettings) {
     return; // Si le conteneur existe déjà, ne rien faire
   }
 
-  // Au lieu de masquer chat-content, on masque chat-list
+  // Masquer la liste des chats
   const chatList = document.getElementById('chat-list-container');
-  chatList.style.display = 'none';
+  if (chatList) {
+    chatList.style.display = 'none';
+  }
   
   // Create settings container avec la même largeur que la liste des chats
   const container = document.createElement('div');
@@ -152,7 +143,10 @@ function renderSettingsView() {
   container.appendChild(logoutSection);
   
   // Add to DOM
-  chatList.parentNode.insertBefore(container, chatList);
+  const chatListParent = chatList ? chatList.parentNode : document.querySelector('#chat-content');
+  if (chatListParent) {
+    chatListParent.insertBefore(container, chatList);
+  }
   
   // Initialize event listeners
   initSettingsEvents();
@@ -160,51 +154,46 @@ function renderSettingsView() {
 
 function initSettingsEvents() {
   // Back button
-  document.getElementById('settings-back-btn').addEventListener('click', hideSettingsView);
+  const backBtn = document.getElementById('settings-back-btn');
+  if (backBtn) {
+    backBtn.addEventListener('click', hideSettingsView);
+  }
   
   // Search functionality
   const searchInput = document.getElementById('settings-search');
-  searchInput.addEventListener('input', (e) => {
-    const query = e.target.value.toLowerCase();
-    const menuItems = document.querySelectorAll('#settings-container .flex.items-center.p-4');
-    
-    menuItems.forEach(item => {
-      const text = item.textContent.toLowerCase();
-      if (text.includes(query)) {
-        item.style.display = 'flex';
-      } else {
-        item.style.display = 'none';
-      }
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase();
+      const menuItems = document.querySelectorAll('#settings-container .flex.items-center.p-4');
+      
+      menuItems.forEach(item => {
+        const text = item.textContent.toLowerCase();
+        if (text.includes(query)) {
+          item.style.display = 'flex';
+        } else {
+          item.style.display = 'none';
+        }
+      });
     });
-  });
+  }
 
   // Ajouter l'événement de déconnexion
-  const logoutSection = document.querySelector('.text-red-500.text-lg').parentElement;
-  logoutSection.addEventListener('click', () => {
-    try {
-      logout(); // Appeler la fonction logout qui redirige vers login.html
-    } catch (error) {
-      console.error('Erreur lors de la déconnexion:', error);
-    }
-  });
+  const logoutBtn = document.querySelector('#settings-container .text-red-500.text-lg');
+  if (logoutBtn && logoutBtn.parentElement) {
+    logoutBtn.parentElement.addEventListener('click', () => {
+      try {
+        logout(); // Appeler la fonction logout qui redirige vers login.html
+      } catch (error) {
+        console.error('Erreur lors de la déconnexion:', error);
+      }
+    });
+  }
 }
 
 function hideSettingsView() {
   const settingsContainer = document.getElementById('settings-container');
-  const chatList = document.getElementById('chat-list-container');
-  const welcomeScreen = document.getElementById('welcome-screen');
-  
   if (settingsContainer) {
     settingsContainer.remove();
-  }
-  
-  if (chatList) {
-    chatList.style.display = 'flex';
-  }
-
-  // Réafficher l'écran de bienvenue
-  if (welcomeScreen) {
-    welcomeScreen.style.display = 'flex';
   }
 }
 

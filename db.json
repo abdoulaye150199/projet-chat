@@ -8,12 +8,12 @@
       "name": "AbdAllah User",
       "countryCode": "SN",
       "status": "Hey! J'utilise WhatsApp",
-      "online": false,
+      "online": true,
       "avatar": "https://api.dicebear.com/6.x/initials/svg?seed=AbdAllah User",
       "registeredAt": "2024-01-01T00:00:00.000Z",
-      "lastLogin": "2025-06-14T13:35:02.996Z",
-      "lastSeen": "2025-06-14T14:29:29.506Z",
-      "isOnline": false,
+      "lastLogin": "2025-06-14T21:34:09.294Z",
+      "lastSeen": "2025-06-14T21:30:51.084Z",
+      "isOnline": true,
       "createdAt": "2024-01-01T00:00:00.000Z"
     },
     {
@@ -27,8 +27,8 @@
       "online": false,
       "avatar": "https://api.dicebear.com/6.x/initials/svg?seed=Dié Niang",
       "registeredAt": "2025-06-14T12:53:29.434Z",
-      "lastLogin": "2025-06-14T13:34:23.201Z",
-      "lastSeen": "2025-06-14T13:34:42.004Z",
+      "lastLogin": "2025-06-14T21:30:54.924Z",
+      "lastSeen": "2025-06-14T21:34:00.380Z",
       "isOnline": false,
       "createdAt": "2025-06-14T12:53:29.434Z"
     }
@@ -43,6 +43,8 @@
       "avatar": "https://api.dicebear.com/6.x/initials/svg?seed=AbdAllah User"
     }
   ],
+  "groups": [],
+  "statuses": [],
   "chats": [
     {
       "id": 1749905578552,
@@ -130,6 +132,23 @@
       "online": false,
       "status": "2 participants",
       "messages": []
+    },
+    {
+      "id": 1749936815476,
+      "contactId": "1",
+      "name": "AbdAllah User",
+      "lastMessage": "",
+      "timestamp": "21:33:35",
+      "unreadCount": 0,
+      "avatar": "https://api.dicebear.com/6.x/initials/svg?seed=AbdAllah User",
+      "online": false,
+      "status": "Hey! J'utilise WhatsApp",
+      "messages": [],
+      "isGroup": false,
+      "participants": [
+        "1749633358808",
+        "1"
+      ]
     }
   ],
   "messages": [
@@ -184,7 +203,58 @@
       "delivered": true,
       "read": false,
       "createdAt": "2025-06-14T13:21:21.017Z"
+    },
+    {
+      "id": "1749936575678",
+      "chatId": 1749905578552,
+      "senderId": "1749905609434",
+      "recipientId": 1749905578552,
+      "text": "oui bonjour",
+      "timestamp": "21:29",
+      "isMe": true,
+      "sent": true,
+      "delivered": true,
+      "read": false,
+      "createdAt": "2025-06-14T21:29:35.690Z"
+    },
+    {
+      "id": "1749936826548",
+      "chatId": 1749936815476,
+      "senderId": "1749633358808",
+      "recipientId": 1749936815476,
+      "text": "salut",
+      "timestamp": "21:33",
+      "isMe": true,
+      "sent": true,
+      "delivered": true,
+      "read": false,
+      "createdAt": "2025-06-14T21:33:46.549Z"
+    },
+    {
+      "id": "1749936997453",
+      "chatId": 1749905731048,
+      "senderId": "1",
+      "recipientId": 1749905731048,
+      "text": "salut",
+      "timestamp": "21:36",
+      "isMe": true,
+      "sent": true,
+      "delivered": true,
+      "read": false,
+      "createdAt": "2025-06-14T21:36:37.468Z"
     }
   ],
-  "statuses": []
+  "notifications": [
+    {
+      "id": "1749936997497",
+      "type": "message",
+      "senderId": "1",
+      "recipientId": 1749905731048,
+      "messageId": "1749936997453",
+      "chatId": 1749905731048,
+      "content": "salut",
+      "timestamp": "2025-06-14T21:36:37.497Z",
+      "read": false
+    }
+  ]
 }
