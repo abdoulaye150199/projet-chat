@@ -51,23 +51,25 @@ export async function startVoiceRecording() {
     recordingStartTime = Date.now();
     wasCanceled = false;
 
+    // Stocker les chunks et autres propriétés sur l'objet mediaRecorder
+    mediaRecorder.audioChunks = audioChunks;
+    mediaRecorder.recordingStartTime = recordingStartTime;
+    mediaRecorder.mimeType = mimeType;
+
     mediaRecorder.addEventListener("dataavailable", (event) => {
       if (event.data.size > 0) {
         audioChunks.push(event.data);
+        mediaRecorder.audioChunks.push(event.data);
       }
     });
 
     mediaRecorder.addEventListener("stop", () => {
       stream.getTracks().forEach(track => track.stop());
-      if (!wasCanceled && audioChunks.length > 0) {
-        const audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
-        const duration = getDuration(recordingStartTime);
-        return { audioBlob, duration };
-      }
-      return null;
+      console.log('Enregistrement arrêté, chunks:', audioChunks.length);
     });
 
-    mediaRecorder.start();
+    mediaRecorder.start(100); // Enregistrer par chunks de 100ms
+    console.log('Enregistrement démarré');
     return mediaRecorder;
   } catch (error) {
     console.error("Erreur d'accès au microphone:", error);
@@ -77,6 +79,7 @@ export async function startVoiceRecording() {
 
 export function stopVoiceRecording() {
   if (mediaRecorder && isRecording) {
+    console.log('Arrêt de l\'enregistrement...');
     mediaRecorder.stop();
     isRecording = false;
     clearInterval(recordingTimer);
@@ -86,6 +89,7 @@ export function stopVoiceRecording() {
 export function cancelVoiceRecording() {
   wasCanceled = true;
   stopVoiceRecording();
+  audioChunks = [];
 }
 
 function getDuration(startTime) {

@@ -216,15 +216,18 @@ async function handleSendMessage(text, isVoice = false, duration = null, audioBl
     let message;
     
     if (isVoice && audioBlob) {
+      console.log('Création d\'un message vocal avec blob:', audioBlob);
+      
       // Créer un message vocal
       message = {
         id: Date.now().toString(),
         chatId: activeChat.id,
         senderId: currentUser.id,
-        recipientId: activeChat.id, // L'ID du contact destinataire
+        recipientId: activeChat.contactId || activeChat.id,
         isVoice: true,
         duration: duration,
         audioBlob: audioBlob,
+        text: "Message vocal",
         timestamp: new Date().toLocaleTimeString('fr-FR', {
           hour: '2-digit',
           minute: '2-digit'
@@ -232,14 +235,17 @@ async function handleSendMessage(text, isVoice = false, duration = null, audioBl
         isMe: true,
         sent: true,
         delivered: false,
-        read: false
+        read: false,
+        createdAt: new Date().toISOString()
       };
 
-      // Sauvegarder le message
+      console.log('Message vocal créé:', message);
+
+      // Sauvegarder le message localement
       const messagesList = getMessagesByChatId(activeChat.id) || [];
       messagesList.push(message);
       
-      // Mettre à jour l'interface
+      // Mettre à jour l'interface immédiatement
       addMessageToChat(message);
 
       // Simuler la livraison et la lecture
@@ -272,7 +278,7 @@ async function handleSendMessage(text, isVoice = false, duration = null, audioBl
       
     } else {
       // Message texte normal avec destinataire
-      const recipientId = activeChat.id; // L'ID du contact destinataire
+      const recipientId = activeChat.contactId || activeChat.id;
       message = await addMessage(activeChat.id, text, true, recipientId);
       
       if (message) {

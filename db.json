@@ -242,6 +242,19 @@
       "delivered": true,
       "read": false,
       "createdAt": "2025-06-14T21:36:37.468Z"
+    },
+    {
+      "id": "1749938235531",
+      "chatId": 1749905631328,
+      "senderId": "1",
+      "recipientId": "1749905609434",
+      "text": "🥲",
+      "timestamp": "21:57",
+      "isMe": true,
+      "sent": true,
+      "delivered": true,
+      "read": false,
+      "createdAt": "2025-06-14T21:57:15.550Z"
     }
   ],
   "notifications": [
@@ -255,6 +268,17 @@
       "content": "salut",
       "timestamp": "2025-06-14T21:36:37.497Z",
       "read": false
+    },
+    {
+      "id": "1749938235577",
+      "type": "message",
+      "senderId": "1",
+      "recipientId": "1749905609434",
+      "messageId": "1749938235531",
+      "chatId": 1749905631328,
+      "content": "🥲",
+      "timestamp": "2025-06-14T21:57:15.577Z",
+      "read": true
     }
   ]
 }

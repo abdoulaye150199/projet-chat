@@ -17,6 +17,7 @@ import { addMessage, getMessages } from '../models/messageModel.js';
 let emojiPicker = null;
 let isRecording = false;
 let mediaRecorder = null;
+let recordingStartTime = null;
 
 // Render the chat header with the active chat information
 function renderChatHeader(chat) {
@@ -166,69 +167,15 @@ function createMessageElement(message) {
   } shadow-sm`;
 
   // Vérifier si c'est un message audio
-  if (message.isVoice) {
-    const voiceContainer = document.createElement('div');
-    voiceContainer.className = 'flex items-center gap-3 min-w-[280px] py-2';
-    
-    // Bouton play/pause
-    const playButton = document.createElement('button');
-    playButton.className = `w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-200 ${
-      message.isMe 
-        ? 'bg-white bg-opacity-20 hover:bg-opacity-30 text-white' 
-        : 'bg-[#00a884] hover:bg-[#06cf9c] text-white'
-    }`;
-    playButton.innerHTML = `
-      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-        <polygon points="5 3 19 12 5 21 5 3"></polygon>
-      </svg>
-    `;
-    
-    // Forme d'onde
-    const waveform = document.createElement('div');
-    waveform.className = 'flex-1 flex items-center gap-0.5 h-8';
-    
-    // Générer une forme d'onde
-    for (let i = 0; i < 40; i++) {
-      const bar = document.createElement('div');
-      const height = Math.random() * 100;
-      bar.className = `w-1 bg-current opacity-50`;
-      bar.style.height = `${height}%`;
-      waveform.appendChild(bar);
-    }
-    
-    // Durée
-    const duration = document.createElement('span');
-    duration.className = 'text-sm text-white ml-2';
-    duration.textContent = message.duration || '0:00';
-
-    voiceContainer.appendChild(playButton);
-    voiceContainer.appendChild(waveform); 
-    voiceContainer.appendChild(duration);
-    
+  if (message.isVoice && message.audioBlob) {
+    const voiceContainer = createVoiceMessageElement(message);
     messageBubble.appendChild(voiceContainer);
-
-    // Gérer la lecture audio
-    if (message.audioBlob) {
-      const audio = new Audio(URL.createObjectURL(message.audioBlob));
-      playButton.onclick = () => {
-        if (audio.paused) {
-          audio.play();
-          playButton.innerHTML = `
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-              <rect x="6" y="4" width="4" height="16"></rect>
-              <rect x="14" y="4" width="4" height="16"></rect>
-            </svg>
-          `;
-        } else {
-          audio.pause();
-          playButton.innerHTML = `
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-              <polygon points="5 3 19 12 5 21 5 3"></polygon>
-            </svg>
-          `;
-        }
-      };
-    }
+  } else if (message.isImage) {
+    const imageContainer = createImageMessage(message);
+    messageBubble.appendChild(imageContainer);
+  } else if (message.isFile) {
+    const fileContainer = createFileMessageElement(message);
+    messageBubble.appendChild(fileContainer);
   } else {
     // Message texte normal
     const messageText = document.createElement('div');
@@ -290,18 +237,6 @@ function createVoiceMessageElement(message) {
   const voiceContainer = document.createElement('div');
   voiceContainer.className = 'flex items-center gap-3 min-w-[280px] py-2';
   
-  // Avatar de l'utilisateur (pour les messages reçus)
-  if (!message.isMe) {
-    const avatar = document.createElement('div');
-    avatar.className = 'w-8 h-8 rounded-full overflow-hidden flex-shrink-0';
-    avatar.innerHTML = `
-      <img src="${message.senderAvatar || './src/assets/images/profile.jpeg'}" 
-           alt="Avatar" 
-           class="w-full h-full object-cover">
-    `;
-    voiceContainer.appendChild(avatar);
-  }
-  
   // Bouton play/pause
   const playButton = document.createElement('button');
   playButton.className = `w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-200 ${
@@ -310,7 +245,7 @@ function createVoiceMessageElement(message) {
       : 'bg-[#00a884] hover:bg-[#06cf9c] text-white'
   }`;
   playButton.innerHTML = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" class="ml-0.5">
       <polygon points="5 3 19 12 5 21 5 3"></polygon>
     </svg>
   `;
@@ -541,6 +476,7 @@ function initMessageInput(onSendMessage) {
   const messageInput = document.getElementById('message-input');
   const voiceBtn = document.getElementById('voice-btn');
   const emojiBtn = document.getElementById('emoji-btn');
+  const attachBtn = document.getElementById('attach-btn');
   const messageInputContainer = document.getElementById('message-input-container');
 
   // Style de l'input pour ressembler à WhatsApp
@@ -548,30 +484,128 @@ function initMessageInput(onSendMessage) {
   messageInput.placeholder = 'Tapez un message';
 
   // Initialize emoji picker
-  emojiPicker = initEmojiPicker();
+  if (!emojiPicker) {
+    emojiPicker = initEmojiPicker();
+  }
 
   // Save original HTML
   const originalInputHTML = messageInputContainer.innerHTML;
 
-  // Emoji button click handler
+  // Fonction pour attacher les événements aux boutons
+  function attachInputListeners() {
+    const currentMessageInput = document.getElementById('message-input');
+    const currentVoiceBtn = document.getElementById('voice-btn');
+    const currentEmojiBtn = document.getElementById('emoji-btn');
+    const currentAttachBtn = document.getElementById('attach-btn');
+
+    if (!currentMessageInput || !currentVoiceBtn || !currentEmojiBtn) return;
+
+    // Style de l'input
+    currentMessageInput.className = 'w-full bg-[#2a3942] text-white rounded-lg px-4 py-3 outline-none placeholder-gray-400 text-[15px]';
+
+    function handleInput() {
+      updateButton(currentMessageInput.value);
+    }
+
+    function handleKeyPress(event) {
+      if (event.key === 'Enter' && !event.shiftKey && currentMessageInput.value.trim() !== '') {
+        event.preventDefault();
+        const messageText = currentMessageInput.value.trim();
+        onSendMessage(messageText);
+        currentMessageInput.value = '';
+        updateButton('');
+      }
+    }
+
+    // Supprimer les anciens événements
+    currentMessageInput.removeEventListener('input', handleInput);
+    currentMessageInput.removeEventListener('keypress', handleKeyPress);
+    
+    // Ajouter les nouveaux événements
+    currentMessageInput.addEventListener('input', handleInput);
+    currentMessageInput.addEventListener('keypress', handleKeyPress);
+
+    // Emoji button - supprimer l'ancien événement et ajouter le nouveau
+    const newEmojiBtn = currentEmojiBtn.cloneNode(true);
+    currentEmojiBtn.parentNode.replaceChild(newEmojiBtn, currentEmojiBtn);
+    
+    newEmojiBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (emojiPicker) {
+        emojiPicker.toggle((emoji) => {
+          const input = document.getElementById('message-input');
+          if (input) {
+            const currentValue = input.value;
+            const cursorPosition = input.selectionStart;
+            const newValue = currentValue.slice(0, cursorPosition) + emoji + currentValue.slice(cursorPosition);
+            input.value = newValue;
+            input.focus();
+            input.setSelectionRange(cursorPosition + emoji.length, cursorPosition + emoji.length);
+            updateButton(newValue);
+          }
+        });
+      }
+    });
+
+    // Attach button - gérer l'import de fichiers
+    if (currentAttachBtn) {
+      const newAttachBtn = currentAttachBtn.cloneNode(true);
+      currentAttachBtn.parentNode.replaceChild(newAttachBtn, currentAttachBtn);
+      
+      newAttachBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        // Importer la fonction depuis attachmentModalView
+        import('../views/attachmentModalView.js').then(module => {
+          const rect = newAttachBtn.getBoundingClientRect();
+          const position = {
+            x: rect.left,
+            y: rect.bottom + 5
+          };
+          module.renderAttachmentModal(position);
+        });
+      });
+    }
+
+    updateButton(currentMessageInput.value);
+  }
+
+  // Emoji button click handler initial
   emojiBtn.addEventListener('click', (e) => {
     e.stopPropagation();
-    emojiPicker.toggle((emoji) => {
-      const currentValue = messageInput.value;
-      const cursorPosition = messageInput.selectionStart;
-      const newValue = currentValue.slice(0, cursorPosition) + emoji + currentValue.slice(cursorPosition);
-      messageInput.value = newValue;
-      messageInput.focus();
-      messageInput.setSelectionRange(cursorPosition + emoji.length, cursorPosition + emoji.length);
-      updateButton(newValue);
-    });
+    if (emojiPicker) {
+      emojiPicker.toggle((emoji) => {
+        const currentValue = messageInput.value;
+        const cursorPosition = messageInput.selectionStart;
+        const newValue = currentValue.slice(0, cursorPosition) + emoji + currentValue.slice(cursorPosition);
+        messageInput.value = newValue;
+        messageInput.focus();
+        messageInput.setSelectionRange(cursorPosition + emoji.length, cursorPosition + emoji.length);
+        updateButton(newValue);
+      });
+    }
   });
+
+  // Attach button initial
+  if (attachBtn) {
+    attachBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      import('../views/attachmentModalView.js').then(module => {
+        const rect = attachBtn.getBoundingClientRect();
+        const position = {
+          x: rect.left,
+          y: rect.bottom + 5
+        };
+        module.renderAttachmentModal(position);
+      });
+    });
+  }
 
   async function handleVoiceRecord() {
     try {
       if (!isRecording) {
         mediaRecorder = await startVoiceRecording();
         isRecording = true;
+        recordingStartTime = Date.now();
 
         // Update UI for recording
         messageInputContainer.innerHTML = `
@@ -604,16 +638,28 @@ function initMessageInput(onSendMessage) {
           resetRecording();
         });
 
-        document.getElementById('send-record').addEventListener('click', () => {
-          stopVoiceRecording();
-          setTimeout(() => {
-            if (mediaRecorder && mediaRecorder.audioChunks && mediaRecorder.audioChunks.length > 0) {
-              const audioBlob = new Blob(mediaRecorder.audioChunks, { type: mediaRecorder.mimeType });
-              const duration = getDuration(mediaRecorder.recordingStartTime);
+        document.getElementById('send-record').addEventListener('click', async () => {
+          if (mediaRecorder && isRecording) {
+            stopVoiceRecording();
+            
+            // Attendre que l'enregistrement soit terminé
+            await new Promise(resolve => {
+              mediaRecorder.addEventListener('stop', resolve, { once: true });
+            });
+            
+            // Créer le blob audio
+            if (mediaRecorder.audioChunks && mediaRecorder.audioChunks.length > 0) {
+              const audioBlob = new Blob(mediaRecorder.audioChunks, { 
+                type: mediaRecorder.mimeType || 'audio/webm' 
+              });
+              const duration = getDuration(recordingStartTime);
+              
+              // Envoyer le message audio
               onSendMessage("Message vocal", true, duration, audioBlob);
             }
+            
             resetRecording();
-          }, 100);
+          }
         });
 
       }
@@ -628,6 +674,7 @@ function initMessageInput(onSendMessage) {
     isRecording = false;
     stopRecordingTimer();
     mediaRecorder = null;
+    recordingStartTime = null;
     
     // Reset UI
     messageInputContainer.innerHTML = originalInputHTML;
@@ -636,56 +683,13 @@ function initMessageInput(onSendMessage) {
     attachInputListeners();
   }
 
-  function attachInputListeners() {
-    const messageInput = document.getElementById('message-input');
-    const voiceBtn = document.getElementById('voice-btn');
-    const emojiBtn = document.getElementById('emoji-btn');
-
-    if (!messageInput || !voiceBtn || !emojiBtn) return;
-
-    // Style de l'input
-    messageInput.className = 'w-full bg-[#2a3942] text-white rounded-lg px-4 py-3 outline-none placeholder-gray-400 text-[15px]';
-
-    function handleInput() {
-      updateButton(messageInput.value);
-    }
-
-    function handleKeyPress(event) {
-      if (event.key === 'Enter' && !event.shiftKey && messageInput.value.trim() !== '') {
-        event.preventDefault();
-        const messageText = messageInput.value.trim();
-        onSendMessage(messageText);
-        messageInput.value = '';
-        updateButton('');
-      }
-    }
-
-    messageInput.addEventListener('input', handleInput);
-    messageInput.addEventListener('keypress', handleKeyPress);
-
-    emojiBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      emojiPicker.toggle((emoji) => {
-        const currentValue = messageInput.value;
-        const cursorPosition = messageInput.selectionStart;
-        const newValue = currentValue.slice(0, cursorPosition) + emoji + currentValue.slice(cursorPosition);
-        messageInput.value = newValue;
-        messageInput.focus();
-        messageInput.setSelectionRange(cursorPosition + emoji.length, cursorPosition + emoji.length);
-        updateButton(newValue);
-      });
-    });
-
-    updateButton(messageInput.value);
-  }
-
   function updateButton(text) {
-    const voiceBtn = document.getElementById('voice-btn');
-    if (!voiceBtn) return;
+    const currentVoiceBtn = document.getElementById('voice-btn');
+    if (!currentVoiceBtn) return;
 
     if (text.trim().length > 0) {
       // Change to send icon
-      voiceBtn.innerHTML = `
+      currentVoiceBtn.innerHTML = `
         <div class="w-6 h-6">
           <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="22" y1="2" x2="11" y2="13"></line>
@@ -694,8 +698,8 @@ function initMessageInput(onSendMessage) {
         </div>
       `;
       
-      const newVoiceBtn = voiceBtn.cloneNode(true);
-      voiceBtn.parentNode.replaceChild(newVoiceBtn, voiceBtn);
+      const newVoiceBtn = currentVoiceBtn.cloneNode(true);
+      currentVoiceBtn.parentNode.replaceChild(newVoiceBtn, currentVoiceBtn);
       
       newVoiceBtn.addEventListener('click', () => {
         const messageInput = document.getElementById('message-input');
@@ -708,7 +712,7 @@ function initMessageInput(onSendMessage) {
       });
     } else {
       // Change to microphone icon
-      voiceBtn.innerHTML = `
+      currentVoiceBtn.innerHTML = `
         <div class="w-6 h-6">
           <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
@@ -719,8 +723,8 @@ function initMessageInput(onSendMessage) {
         </div>
       `;
       
-      const newVoiceBtn = voiceBtn.cloneNode(true);
-      voiceBtn.parentNode.replaceChild(newVoiceBtn, voiceBtn);
+      const newVoiceBtn = currentVoiceBtn.cloneNode(true);
+      currentVoiceBtn.parentNode.replaceChild(newVoiceBtn, currentVoiceBtn);
       
       newVoiceBtn.addEventListener('click', handleVoiceRecord);
     }
@@ -795,6 +799,15 @@ function filterChats(filterType) {
     }
   });
 }
+
+// Emoji map simple pour les raccourcis
+const emojiMap = {
+  'smile': '😊',
+  'heart': '❤️',
+  'thumbs_up': '👍',
+  'laugh': '😂',
+  'wink': '😉'
+};
 
 export {
   renderChatHeader,
