@@ -10,7 +10,9 @@ import {
   handleFileUpload,
   formatFileSize,
   startRecordingTimer,
-  stopRecordingTimer
+  stopRecordingTimer,
+  createAudioBlob,
+  getRecordingDuration
 } from './chatView2.js';
 import { addMessage, getMessages } from '../models/messageModel.js';
 
@@ -299,51 +301,138 @@ function createVoiceMessageElement(message) {
   
   // Créer l'objet audio si on a un blob
   if (message.audioBlob) {
-    const audioUrl = URL.createObjectURL(message.audioBlob);
-    audio = new Audio(audioUrl);
-    
-    audio.addEventListener('loadedmetadata', () => {
-      totalDuration = audio.duration;
-      duration.textContent = formatDuration(totalDuration);
-    });
-    
-    audio.addEventListener('timeupdate', () => {
-      currentTime = audio.currentTime;
-      const progress = currentTime / totalDuration;
+    try {
+      // Créer l'URL du blob
+      const audioUrl = URL.createObjectURL(message.audioBlob);
       
-      // Mettre à jour la forme d'onde pour montrer le progrès
-      waveformBars.forEach((bar, index) => {
-        if (index / barCount <= progress) {
-          bar.classList.remove('bg-opacity-40', 'bg-[#8696a0]');
-          bar.classList.add(message.isMe ? 'bg-white' : 'bg-[#00a884]');
-        } else {
-          bar.classList.remove('bg-white', 'bg-[#00a884]');
-          bar.classList.add(message.isMe ? 'bg-white bg-opacity-40' : 'bg-[#8696a0]');
-        }
+      // Créer et configurer l'élément audio
+      audio = new Audio();
+      audio.src = audioUrl;
+      audio.preload = 'metadata';
+      
+      // Nettoyer l'URL quand l'audio est chargé
+      audio.addEventListener('loadedmetadata', () => {
+        totalDuration = audio.duration || 0;
+        duration.textContent = formatDuration(totalDuration);
+        URL.revokeObjectURL(audioUrl); // Libérer la mémoire
       });
-      
-      // Mettre à jour la durée affichée
-      const remaining = totalDuration - currentTime;
-      duration.textContent = formatDuration(remaining);
-    });
+
+      // Gérer les erreurs de chargement
+      audio.addEventListener('error', (e) => {
+        console.error('Erreur de chargement audio:', e);
+        duration.textContent = '0:00';
+      });
+    } catch (error) {
+      console.error('Erreur lors de la création de l\'audio:', error);
+    }
+  }
+  
+  // Événement de clic sur le bouton play/pause
+  playButton.addEventListener('click', () => {
+    if (!audio) return;
     
-    audio.addEventListener('ended', () => {
+    if (isPlaying) {
+      audio.pause();
       isPlaying = false;
       playButton.innerHTML = `
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" class="ml-0.5">
           <polygon points="5 3 19 12 5 21 5 3"></polygon>
         </svg>
       `;
+    } else {
+      audio.play();
+      isPlaying = true;
+      playButton.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+          <rect x="6" y="4" width="4" height="16"></rect>
+          <rect x="14" y="4" width="4" height="16"></rect>
+        </svg>
+      `;
+    }
+  });
+  
+  // Événement de clic sur la forme d'onde pour naviguer
+  waveform.addEventListener('click', (e) => {
+    if (!audio) return;
+    
+    const rect = waveform.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const progress = clickX / rect.width;
+    const newTime = progress * totalDuration;
+    
+    audio.currentTime = newTime;
+  });
+
+  // Mettre à jour l'état initial des barres
+  waveformBars.forEach(bar => {
+    if (message.isMe) {
+      bar.classList.add('bg-white');
+      bar.classList.add('bg-opacity-40'); // Ajouter séparément
+    } else {
+      bar.classList.add('bg-[#8696a0]');
+    }
+  });
+
+  audio.addEventListener('timeupdate', () => {
+    // Vérifier que totalDuration est valide
+    if (!isFinite(totalDuration) || totalDuration <= 0) {
+      totalDuration = audio.duration;
+    }
+    
+    currentTime = audio.currentTime;
+    // Éviter la division par zéro
+    const progress = totalDuration > 0 ? currentTime / totalDuration : 0;
+    
+    // Mise à jour des barres pendant la lecture
+    waveformBars.forEach((bar, index) => {
+      if (!isFinite(progress)) return;
       
-      // Réinitialiser la forme d'onde
-      waveformBars.forEach(bar => {
-        bar.classList.remove('bg-white', 'bg-[#00a884]');
-        bar.classList.add(message.isMe ? 'bg-white bg-opacity-40' : 'bg-[#8696a0]');
-      });
-      
-      duration.textContent = formatDuration(totalDuration);
+      if (index / barCount <= progress) {
+        bar.classList.remove('bg-opacity-40');
+        bar.classList.remove('bg-[#8696a0]');
+        
+        if (message.isMe) {
+          bar.classList.add('bg-white');
+        } else {
+          bar.classList.add('bg-[#00a884]');
+        }
+      } else {
+        if (message.isMe) {
+          bar.classList.add('bg-white');
+          bar.classList.add('bg-opacity-40'); // Ajouter séparément
+        } else {
+          bar.classList.add('bg-[#8696a0]');
+        }
+      }
     });
-  }
+    
+    // Vérifier que les valeurs sont valides avant de calculer remaining
+    const remaining = isFinite(totalDuration) && isFinite(currentTime) ? 
+                     totalDuration - currentTime : 0;
+    duration.textContent = formatDuration(remaining);
+  });
+  
+  audio.addEventListener('ended', () => {
+    isPlaying = false;
+    playButton.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" class="ml-0.5">
+        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+      </svg>
+    `;
+    
+    // Réinitialiser la forme d'onde
+    waveformBars.forEach(bar => {
+      bar.classList.remove('bg-white', 'bg-[#00a884]');
+      if (message.isMe) {
+        bar.classList.add('bg-white');
+        bar.classList.add('bg-opacity-40'); // Ajouter séparément
+      } else {
+        bar.classList.add('bg-[#8696a0]');
+      }
+    });
+    
+    duration.textContent = formatDuration(totalDuration);
+  });
   
   // Événement de clic sur le bouton play/pause
   playButton.addEventListener('click', () => {
@@ -603,6 +692,7 @@ function initMessageInput(onSendMessage) {
   async function handleVoiceRecord() {
     try {
       if (!isRecording) {
+        console.log('Démarrage de l\'enregistrement...');
         mediaRecorder = await startVoiceRecording();
         isRecording = true;
         recordingStartTime = Date.now();
@@ -634,11 +724,13 @@ function initMessageInput(onSendMessage) {
 
         // Add event listeners for recording controls
         document.getElementById('cancel-record').addEventListener('click', () => {
+          console.log('Annulation de l\'enregistrement');
           cancelVoiceRecording();
           resetRecording();
         });
 
         document.getElementById('send-record').addEventListener('click', async () => {
+          console.log('Envoi de l\'enregistrement');
           if (mediaRecorder && isRecording) {
             stopVoiceRecording();
             
@@ -648,14 +740,15 @@ function initMessageInput(onSendMessage) {
             });
             
             // Créer le blob audio
-            if (mediaRecorder.audioChunks && mediaRecorder.audioChunks.length > 0) {
-              const audioBlob = new Blob(mediaRecorder.audioChunks, { 
-                type: mediaRecorder.mimeType || 'audio/webm' 
-              });
-              const duration = getDuration(recordingStartTime);
+            const audioBlob = createAudioBlob();
+            if (audioBlob && audioBlob.size > 0) {
+              const duration = getRecordingDuration();
+              console.log('Envoi du message vocal:', { duration, size: audioBlob.size });
               
               // Envoyer le message audio
               onSendMessage("Message vocal", true, duration, audioBlob);
+            } else {
+              console.error('Aucun audio enregistré');
             }
             
             resetRecording();

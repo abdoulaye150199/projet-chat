@@ -207,28 +207,12 @@ async function handleAddContactSubmit(e) {
     const addedContact = await addNewContact(newContact);
     console.log('Contact ajouté:', addedContact);
     
-    // Refresh contacts list if visible
-    const contactsList = document.getElementById('contacts-list');
-    if (contactsList) {
-      try {
-        const contacts = await getAllContacts();
-        console.log('Rafraîchissement de la liste des contacts');
-        
-        // Get the current onContactSelect callback from the new discussion view
-        const newDiscussionContainer = document.getElementById('new-discussion-container');
-        if (newDiscussionContainer) {
-          // We need to re-render the contacts with the callback
-          // This is a bit tricky since we need the callback function
-          // For now, we'll just reload the contacts without the callback
-          await renderContacts(contacts, null);
-        }
-      } catch (error) {
-        console.error('Erreur lors du rafraîchissement:', error);
-      }
-    }
-    
     hideAddContactModal();
     showNotification('Contact ajouté avec succès!');
+    
+    // Emit event for the new discussion view
+    const event = new CustomEvent('contact-added', { detail: addedContact });
+    document.dispatchEvent(event);
     
   } catch (error) {
     if (error.message === 'Ce numéro existe déjà') {

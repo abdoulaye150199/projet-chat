@@ -41,13 +41,43 @@
       "status": "Hey! J'utilise WhatsApp",
       "online": true,
       "avatar": "https://api.dicebear.com/6.x/initials/svg?seed=AbdAllah User"
+    },
+    {
+      "id": "1749985111949",
+      "name": "khouss",
+      "phone": "+221 76 837 39 73",
+      "status": "Hey! J'utilise WhatsApp",
+      "online": false,
+      "avatar": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHgAAAB4CAYAAAA5ZDbSAAAAAXNSR0IArs4c6QAADANJREFUeF7tnXuMVNUdx7+/O8OjDdrSBiqkFTRlZ6F/0FSQCggFi2Ak7MirQg3iMgtG0hAkLTba9A811SbWaIIFdgAlcVGes0gtui1vbKhL7UNgZ1ER0i4V6iOFwsLM3F85s3dh2J3HvXfOnbnnzj1/7p7zO+f8PnPO/Z3f7zwIHkhrv72xXzIYHBbQA1XQ+FZm3AxgADP6E6EvgBsA9CZQUHSXwUkA7QDOMeNzIpwBcJoIp6DTRykt1RpMJo/WfjD7rOrqIRU7EA1tGQNoY8DaKBDfBmCQQ/04CabDIP0QoB+MxGccdKgex8QqAXjV0C0DgqngVAamgHiSMSIdU0oewefA1ETAzmQguWPRsRmny9EIK3W6FvCKYRv79E72msPQZ4FIQHVfYm4iaJvag5c2LD46+7z7Ggi4DvDa6tjoFFMtgecB6OFGpWVpU4JB6wPEa2tbwu+4qc2uAVwfis0k4BEAE9ykIBtt2c3AS3Xx8GYbZaUXKTvgaFXj/SBeBmCE9N6VV2AzmJ6LtNa8Vs5mlA3w2urYZJ3xOIA7y6mAEtS9XyM8XdsSfqsEdXWrouSA60PbbyHoTwGYW44Ol7HOBob2RF182olStqGkgKNVsaUgPKuQ8SSbRQKM5ZHW8POyBeeSVxLA9UN2DCVKvODa5U6ptN1ZD3MTc48ldcenHnO6ascBr6lqrGPiFRU8anMxTBDT4gWtNfVOQnYUcDQUW3nFx7vIyQ54QPaqSDz8sFP9cASwYUi9UgEWsiwu+xnag04YYNIBr67eOl5jrQHAQFm9rxA5bTrpcxe2TN8rs79SAQtvlAZsZBe6QGUqzSlZBLAOzJbpBZMGeE319vnM+jqnOl9Jcom0hxa0THtZRp+lADYs5dUyGuTL6NAAMS2UYWEXDdgfuc79JGWM5KIAGxGgTc510ZfMwKxivsm2AQtrOcCaCI3ZluHjK6wBYXilSJ9g17q2BcdY5x7wl0KFAUnK0cbQxtpZJ9sCHA3F9vlODEnozIvZH4mHx5nPbhhrVgv47kerGpOa37Jb09II9pdDUmHZEmZ1+WQacDrkpyX/5keFbHGRWSjBenC42VCjacDRqm1v+/FcmZyKkMXcFGm9724zEkwBNnZi/MaMQD9PiTTAeNTMzpCCgI0lUdyfmksEznw1CYYWKrR0Kgg4Goq9WoEb5Myrubw5GyLx8I/zNSEvYGNr687y9sGvPZ8GNMKUfFty8wL2HRpK/LjyOkByAjZOHGxQoouV3kimOblOUOQGHIq968HjJF79KTRH4uGR2TqXFbAfBlTvd5ArrJgVcDQU2+WBU37qUSquxbsj8fDEriK6ARbnc3WGclcVFKcbb5TWCGO6nk/uBrg+1Bgl8AJvdLmyesGgNXXxmkhmr68DLK5N6JXq+ZnvtVL2h5G4FLj8tczrJK4D7IcDlQV7teFdw4nXAVYlYtSjTxDzmu/NSuPCmXZsGGf9rHXwSwFMXn0Hbhr59axyOcU48Iu/onXrKXf/CrpEmq4CFlcVBfRAm7tb39E62YA9A9eAl9JSAzuveLoKWKXpWSbgQC8NU6Kj1R+5GSMzc5q+Cjha1bgFxNMraQQLuHev/D4G3tEv57S897G/4MM3/qmCWq61kWlrpLVmhvjDNcCh2H/LeIOcJQXKGMGehduhyXORePjGq4A77n4MiH3OSqRiAXscbueXeKy4WzM9gqOhbT8DSFyOokQqBrDWQ8Pk1bmnZT3F2KfitNyNHC+PxO/7dQdghb6/xVjRAu6kFbfjm+O+kfWHLODuWdaMEzuVWEzkH4zGd9gYwbGPHbySV/qsYGcEVxTcDo2fjMTDg0lcpq0HeooLsZVJVgFXINw0Sy11uT8Zd2rsUYauRUeHFiBM+u2o3NNyQseenx72xrTcBaJO+g9IJQdHZ/vNjmABd+KLt2PQXTdl/+YmdOxa2oyTf3D9vd62xp9weNCa6tivmPGYLQllKmQGcKXDFWiI8Aypuu95QUtN1p/XhU/a8frEtyt65GYopkEAVnJ7Tk7AZ9px9h9f5JyWReeT7Sn87oED+M/7X5RpDipZtbupvir2PhG+U7IqJVSUb4o2K/5/py+iceZeXPz0ktkiyuVjxhExgv+l2lUMMgALWp+89xnefOAAhIPDo6lNAFYmyGDGiu4KKnkxBRHvzZWOvnoCf3ry7x7li3MC8GUV92Dl+gZnkjp/+iL++JM/Y/CkARi+qConxH0/fw/Ht7l8p4a9n2CC1oQadQYXPGVoT74zpcxM0f9u/hS7lrx79Rt7z7rROeO+qUs6fj//YHrK9lIicV+e5wBf2eJ/ZP2HOPTsEbB+7dva66s9Ed46Hn0Gfjn78upsO2LhPZ4yutKAVZyizTg6slHsN7wv7l0/FiIenC150OhKeM7IKrSrMjRrEMY++d2cM3HL6x/j4C/FXTOeSGkjy1PLpEKABbZxz3wPQ8LfqgSjq81zjg4zgMUUXbN5PPoOSW9b6pa8YnR1OjqUc1Xa/QZnkvzK4D6YtnEcet6Y/f3LC2fb054u4dtWOO1WMtggA7CANuiHA3DXiyNBWvZVovBVv/GjfSp7uho8Gy40O+pGPDoMwxcOyZk9vulk+siKiikdLvRywN8slHxOECFDWNXCulYtpQP+Xt+yYwZKISeIntDx5jz1PF3pLTuVsOnODORCThAVja70pjvR+WjI+9tmzUAu5ARJG11z9kOMaAVSx7bZNOAK2fhuBkohJ4iIOonok+vT9Rvf1Tq64nrluqKBmUdXFDt85gr9ub4RqWuHz4zvsHI7O1yv4/I18Prjoyp+h8unOwVqznYAXEWHhwKqLksTs17hoNIlLGXRmkKVZr2EpWOa9h/eUIhj9qbmukZJ5PanaeXxdnuW1r/KUH2mmT3If5WhyOlfRqou8YKXkYqu+dcJqwvY1HXChtNDuW086mKR1nJzF4J3TNOxmQT4L3tL073zgixd6W+MYv9RDue5yKrB2qMchuvyfhD7z+rIQuCkHDvP6hij2H/p20kwcmTbexjLsKgn6wz/aTs5IByRUtTTdsYo9h+ndASNFKHFPU7ZYVFvv4Wg+8/LSuEhVYic52U7DK7YUhD8B6Kl8ilSmKwHojub4UeaigQis7jsJ97TU/WQHUNJS4qDs9lPa8nsgC8rnwYSrAeH1x2fesyMmizdzeGHE82o1Nk8Xd9FKlSbJcCGVb0SwKJCgv3/O6KBVZF4+GErki0D9h0gVtQrNW9eh0aummwBNpZO4hGPgVK74AvLpYE2hja2Lj7thFUV2QIsKhGnEgOs7eaMp3msVu7nL6wBAjhF+oSFLdP3Fs7dPYdtwGnL2g8r2tG5pTK5woBmhRQFWFSypnr7fGZ9ndkK/XzmNUCkPbSgZdrL5ktIHsGd4vzlUzEIspe1uhySamRlE+aPZHmQZYzcztYUPUVndkt8kzVgo2942YMtDCodmF0XD2+2J8GhKTpTrHHnR4O/hLKMqE0nfa5da9nxKfr6kZwOMb4C4E7L3azMAvsZ2oN21rmF1CV1iu5aWTQU892ahQgAlt2PhUVey+Eo4PQyqqqxjolX+FGoblgSxLR4QWtNvRVgVvM6Dlg0KB1qpMQLIJpktYGezM/cxNxjidmQXzE6KAngzgYaO0PEO8WVGlNOgLE80hp+vhhoVsqWFHB6NHfs8XoKwFwrDfVA3gaG9oQThlQ+3ZQccGdj1lbHxJbcxyvA0t6vEZ6ubQm/VY4fadkAX5u2G8UJimUARpRDAQ7W2Qym5yKtNa85WEdB0WUH3NlCIzL1CIAJBVvt7gwihPqSTG9UMd11DeCMqXt0iqmWwPMUMsYSDFofIF5b2xJ+pxggssu6DnBnB1cM29ind7LXHIY+y7XLK+YmgrapPXhpw+Kjs8/LhiNDnmsBZ3ZOXPEUTAWnMjAFxGItfYOMztuQcQ5MTQTsTAaSOxYdm+H6p8OVANwVRDR9t6Y2BqyNAvFt4vkFG7DMFDkJpsMg/RCgH4zEZxw0U8hNeZQE3FWB4lLzZDA4LKAHqqDxrcy4GcAAZvQnQl9jxPcmUFCUZXASgHhO5RwzPifCmStbgU8T4RR0+iilpVqDyeTR2g9mn3UTLDtt+T+d+U8kXHMn3wAAAABJRU5ErkJggg==",
+      "createdAt": "2025-06-15T10:58:31.949Z",
+      "userId": "1749905609434"
+    },
+    {
+      "id": "1749985185218",
+      "name": "khouss",
+      "phone": "+221 76 837 39 73",
+      "status": "Hey! J'utilise WhatsApp",
+      "online": false,
+      "avatar": "data:image/png;base64,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",
+      "createdAt": "2025-06-15T10:59:45.218Z",
+      "userId": "1749905609434"
+    },
+    {
+      "id": "1749985203744",
+      "name": "Fallou",
+      "phone": "+221 76 837 39 73",
+      "status": "Hey! J'utilise WhatsApp",
+      "online": false,
+      "avatar": "data:image/png;base64,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",
+      "createdAt": "2025-06-15T11:00:03.744Z",
+      "userId": "1749905609434"
     }
   ],
   "groups": [],
   "statuses": [],
   "chats": [
     {
-      "id": 1749905578552,
+      "id": "1749905578552",
       "contactId": "1",
       "name": "AbdAllah User",
       "lastMessage": "",
@@ -64,7 +94,7 @@
       ]
     },
     {
-      "id": 1749905631328,
+      "id": "1749905631328",
       "contactId": "1749905609434",
       "name": "Dié Niang",
       "lastMessage": "",
@@ -81,7 +111,7 @@
       ]
     },
     {
-      "id": 1749905731048,
+      "id": "1749905731048",
       "contactId": "1",
       "name": "AbdAllah User",
       "lastMessage": "",
@@ -98,7 +128,7 @@
       ]
     },
     {
-      "id": 1749907182215,
+      "id": "1749907182215",
       "contactId": "1749905609434",
       "name": "Dié Niang",
       "lastMessage": "",
@@ -115,7 +145,7 @@
       ]
     },
     {
-      "id": 1749909047017,
+      "id": "1749909047017",
       "name": "GE",
       "description": "",
       "avatar": "data:image/png;base64,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",
@@ -134,7 +164,7 @@
       "messages": []
     },
     {
-      "id": 1749936815476,
+      "id": "1749936815476",
       "contactId": "1",
       "name": "AbdAllah User",
       "lastMessage": "",
@@ -149,6 +179,25 @@
         "1749633358808",
         "1"
       ]
+    },
+    {
+      "id": "1749943846578",
+      "name": "zads",
+      "description": "",
+      "avatar": "data:image/png;base64,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",
+      "isGroup": true,
+      "participants": [
+        "1",
+        "1749905609434"
+      ],
+      "admin": "1",
+      "createdAt": "2025-06-14T23:30:46.578Z",
+      "lastMessage": "Groupe créé par AbdAllah User",
+      "timestamp": "23:30",
+      "unreadCount": 0,
+      "online": false,
+      "status": "2 participants",
+      "messages": []
     }
   ],
   "messages": [
@@ -255,6 +304,58 @@
       "delivered": true,
       "read": false,
       "createdAt": "2025-06-14T21:57:15.550Z"
+    },
+    {
+      "id": "1749940498248",
+      "chatId": 1749905631328,
+      "senderId": "1",
+      "recipientId": "1749905609434",
+      "text": "salut",
+      "timestamp": "22:34",
+      "isMe": true,
+      "sent": true,
+      "delivered": true,
+      "read": false,
+      "createdAt": "2025-06-14T22:34:58.248Z"
+    },
+    {
+      "id": "1749940529905",
+      "chatId": 1749905631328,
+      "senderId": "1",
+      "recipientId": "1749905609434",
+      "text": "fjkfd",
+      "timestamp": "22:35",
+      "isMe": true,
+      "sent": true,
+      "delivered": true,
+      "read": false,
+      "createdAt": "2025-06-14T22:35:29.906Z"
+    },
+    {
+      "id": "1749940531542",
+      "chatId": 1749905631328,
+      "senderId": "1",
+      "recipientId": "1749905609434",
+      "text": "dsfjdf",
+      "timestamp": "22:35",
+      "isMe": true,
+      "sent": true,
+      "delivered": true,
+      "read": false,
+      "createdAt": "2025-06-14T22:35:31.542Z"
+    },
+    {
+      "id": "1749943090130",
+      "chatId": 1749905731048,
+      "senderId": "1",
+      "recipientId": "1",
+      "text": "🤫",
+      "timestamp": "23:18",
+      "isMe": true,
+      "sent": true,
+      "delivered": true,
+      "read": false,
+      "createdAt": "2025-06-14T23:18:10.131Z"
     }
   ],
   "notifications": [
@@ -278,6 +379,50 @@
       "chatId": 1749905631328,
       "content": "🥲",
       "timestamp": "2025-06-14T21:57:15.577Z",
+      "read": true
+    },
+    {
+      "id": "1749940498275",
+      "type": "message",
+      "senderId": "1",
+      "recipientId": "1749905609434",
+      "messageId": "1749940498248",
+      "chatId": 1749905631328,
+      "content": "salut",
+      "timestamp": "2025-06-14T22:34:58.275Z",
+      "read": true
+    },
+    {
+      "id": "1749940529925",
+      "type": "message",
+      "senderId": "1",
+      "recipientId": "1749905609434",
+      "messageId": "1749940529905",
+      "chatId": 1749905631328,
+      "content": "fjkfd",
+      "timestamp": "2025-06-14T22:35:29.925Z",
+      "read": true
+    },
+    {
+      "id": "1749940531570",
+      "type": "message",
+      "senderId": "1",
+      "recipientId": "1749905609434",
+      "messageId": "1749940531542",
+      "chatId": 1749905631328,
+      "content": "dsfjdf",
+      "timestamp": "2025-06-14T22:35:31.570Z",
+      "read": true
+    },
+    {
+      "id": "1749943090187",
+      "type": "message",
+      "senderId": "1",
+      "recipientId": "1",
+      "messageId": "1749943090130",
+      "chatId": 1749905731048,
+      "content": "🤫",
+      "timestamp": "2025-06-14T23:18:10.187Z",
       "read": true
     }
   ]

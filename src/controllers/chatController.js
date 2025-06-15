@@ -23,6 +23,12 @@ function initChat() {
   
   // Démarrer la synchronisation des messages
   startMessageSync();
+  
+  // Écouter les événements de rafraîchissement de la liste des chats
+  document.addEventListener('refresh-chat-list', async () => {
+    const updatedChats = getAllChats();
+    renderChatList(updatedChats, handleChatClick);
+  });
 }
 
 function initNewChatButton() {
@@ -47,7 +53,32 @@ async function handleNewChat(contact) {
       return;
     }
 
-    // Créer ou récupérer le chat
+    // Vérifier si c'est un groupe ou une communauté
+    if (contact.isGroup || contact.isCommunity) {
+      // C'est un groupe ou une communauté nouvellement créé
+      activeChat = contact;
+      window.activeChat = contact;
+
+      // Masquer la vue des nouvelles discussions
+      hideNewDiscussionView();
+
+      // Afficher les éléments de chat
+      showChatInterface();
+
+      // Mettre à jour l'interface avec les données du chat
+      renderChatHeader(contact);
+      
+      // Récupérer et afficher les messages (vide pour un nouveau groupe/communauté)
+      renderMessages([]);
+
+      // Mettre à jour la liste des chats
+      const allChats = getAllChats();
+      renderChatList(allChats, handleChatClick);
+
+      return;
+    }
+
+    // Créer ou récupérer le chat pour un contact normal
     const chat = await createNewChat(contact);
     if (!chat) {
       console.error('Erreur lors de la création du chat');

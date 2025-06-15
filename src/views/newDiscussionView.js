@@ -1,6 +1,7 @@
-import { getAllContacts, searchContacts } from '../models/chatModel.js';
+import { getAllContacts, searchContacts, createNewGroup } from '../models/chatModel.js';
 import { renderAddContactModal } from './addContactModalView.js';
 import { renderCreateGroupModal } from './createGroupModalView.js';
+import { renderCreateCommunityModal } from './createCommunityModalView.js';
 import { generateInitialsAvatar } from '../utils/avatarGenerator.js';
 
 let currentContacts = [];
@@ -120,13 +121,13 @@ export async function renderNewDiscussionView(onContactSelect) {
       <input
         type="text"
         id="contact-search"
-        placeholder="Rechercher un utilisateur inscrit"
+        placeholder="Rechercher un nom ou un numéro"
         class="bg-transparent border-none outline-none text-white w-full"
       />
     </div>
   `;
   
-  // Options (Group and Community)
+  // Options (Group, Community, New Contact)
   const optionsContainer = document.createElement('div');
   optionsContainer.className = 'border-b border-gray-700';
   optionsContainer.innerHTML = `
@@ -140,6 +141,36 @@ export async function renderNewDiscussionView(onContactSelect) {
         </svg>
       </div>
       <span class="text-white">Nouveau groupe</span>
+    </div>
+    
+    <div id="new-community-btn" class="cursor-pointer hover:bg-[#202c33] p-3 flex items-center transition-colors">
+      <div class="w-12 h-12 rounded-full bg-[#00a884] flex items-center justify-center mr-4">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          <circle cx="20" cy="8" r="2"></circle>
+        </svg>
+      </div>
+      <span class="text-white">Nouvelle communauté</span>
+    </div>
+  `;
+
+  // Section title for contacts
+  const contactsHeader = document.createElement('div');
+  contactsHeader.className = 'px-4 py-2 bg-[#111b21]';
+  contactsHeader.innerHTML = `
+    <div class="flex items-center justify-between">
+      <h3 class="text-[#00a884] text-sm font-medium">CONTACTS SUR WHATSAPP</h3>
+      <button id="add-contact-btn" class="text-[#00a884] hover:text-[#06cf9c] transition-colors" title="Ajouter un contact">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+          <line x1="19" y1="8" x2="19" y2="14"></line>
+          <line x1="22" y1="11" x2="16" y2="11"></line>
+        </svg>
+      </button>
     </div>
   `;
 
@@ -158,6 +189,7 @@ export async function renderNewDiscussionView(onContactSelect) {
   container.appendChild(header);
   container.appendChild(searchContainer);
   container.appendChild(optionsContainer);
+  container.appendChild(contactsHeader);
   container.appendChild(contactsList);
   
   // Add to DOM
@@ -171,7 +203,13 @@ export async function renderNewDiscussionView(onContactSelect) {
   refreshButton.addEventListener('click', () => loadContacts(onContactSelect));
 
   const newGroupBtn = container.querySelector('#new-group-btn');
-  newGroupBtn.addEventListener('click', handleNewGroup);
+  newGroupBtn.addEventListener('click', () => handleNewGroup(onContactSelect));
+
+  const newCommunityBtn = container.querySelector('#new-community-btn');
+  newCommunityBtn.addEventListener('click', () => handleNewCommunity(onContactSelect));
+
+  const addContactBtn = container.querySelector('#add-contact-btn');
+  addContactBtn.addEventListener('click', () => handleAddContact(onContactSelect));
 
   // Initialize events
   initNewDiscussionEvents(onContactSelect);
@@ -230,9 +268,84 @@ export function hideNewDiscussionView() {
   }
 }
 
-async function handleNewGroup() {
+async function handleNewGroup(onContactSelect) {
   console.log('Création d\'un nouveau groupe');
-  await renderCreateGroupModal();
+  try {
+    await renderCreateGroupModal();
+    
+    // Écouter l'événement de création de groupe
+    document.addEventListener('group-created', async (event) => {
+      const newGroup = event.detail;
+      console.log('Nouveau groupe créé:', newGroup);
+      
+      // Fermer la vue nouvelle discussion
+      hideNewDiscussionView();
+      
+      // Sélectionner automatiquement le nouveau groupe
+      if (onContactSelect) {
+        onContactSelect(newGroup);
+      }
+      
+      // Rafraîchir la liste des chats
+      const chatListRefreshEvent = new CustomEvent('refresh-chat-list');
+      document.dispatchEvent(chatListRefreshEvent);
+    }, { once: true });
+    
+  } catch (error) {
+    console.error('Erreur lors de la création du groupe:', error);
+    showNotification('Erreur lors de la création du groupe', 'error');
+  }
+}
+
+async function handleNewCommunity(onContactSelect) {
+  console.log('Création d\'une nouvelle communauté');
+  try {
+    await renderCreateCommunityModal();
+    
+    // Écouter l'événement de création de communauté
+    document.addEventListener('community-created', async (event) => {
+      const newCommunity = event.detail;
+      console.log('Nouvelle communauté créée:', newCommunity);
+      
+      // Fermer la vue nouvelle discussion
+      hideNewDiscussionView();
+      
+      // Sélectionner automatiquement la nouvelle communauté
+      if (onContactSelect) {
+        onContactSelect(newCommunity);
+      }
+      
+      // Rafraîchir la liste des chats
+      const chatListRefreshEvent = new CustomEvent('refresh-chat-list');
+      document.dispatchEvent(chatListRefreshEvent);
+    }, { once: true });
+    
+  } catch (error) {
+    console.error('Erreur lors de la création de la communauté:', error);
+    showNotification('Erreur lors de la création de la communauté', 'error');
+  }
+}
+
+async function handleAddContact(onContactSelect) {
+  console.log('Ajout d\'un nouveau contact');
+  try {
+    renderAddContactModal();
+    
+    // Écouter l'événement d'ajout de contact
+    document.addEventListener('contact-added', async (event) => {
+      const newContact = event.detail;
+      console.log('Nouveau contact ajouté:', newContact);
+      
+      // Rafraîchir la liste des contacts
+      await loadContacts(onContactSelect);
+      
+      showNotification('Contact ajouté avec succès!');
+    }, { once: true });
+    
+  } catch (error) {
+    console.error('Erreur lors de l\'ajout du contact:', error);
+    showNotification('Erreur lors de l\'ajout du contact', 'error');
+  }
 }
 
 async function initNewDiscussionEvents(onContactSelect) {
