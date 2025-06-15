@@ -1,10 +1,11 @@
-import { getAllContacts, searchContacts, createNewGroup } from '../models/chatModel.js';
+import { getAllContacts, searchContacts, createNewGroup, getAllChats } from '../models/chatModel.js';
 import { renderAddContactModal } from './addContactModalView.js';
 import { renderCreateGroupModal } from './createGroupModalView.js';
 import { renderCreateCommunityModal } from './createCommunityModalView.js';
 import { generateInitialsAvatar } from '../utils/avatarGenerator.js';
 
 let currentContacts = [];
+let currentGroups = [];
 
 async function renderContacts(contacts, onContactSelect) {
   const contactsList = document.getElementById('contacts-list');
@@ -74,6 +75,113 @@ async function renderContacts(contacts, onContactSelect) {
       }
     });
   });
+}
+
+// Nouvelle fonction pour afficher les groupes et communautés
+async function renderGroupsAndCommunities(onContactSelect) {
+  const contactsList = document.getElementById('contacts-list');
+  if (!contactsList) return;
+
+  try {
+    // Récupérer tous les chats (incluant groupes et communautés)
+    const allChats = getAllChats();
+    const groupsAndCommunities = allChats.filter(chat => 
+      chat.isGroup || chat.isCommunity
+    );
+
+    currentGroups = groupsAndCommunities;
+
+    if (groupsAndCommunities.length === 0) {
+      contactsList.innerHTML = `
+        <div class="flex flex-col items-center justify-center p-8 text-center">
+          <div class="w-16 h-16 bg-[#2a3942] rounded-full flex items-center justify-center mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+          </div>
+          <h3 class="text-white text-lg mb-2">Aucun groupe ou communauté</h3>
+          <p class="text-gray-400 text-sm">Créez votre premier groupe ou communauté</p>
+        </div>
+      `;
+      return;
+    }
+
+    contactsList.innerHTML = groupsAndCommunities.map(item => {
+      const avatarData = item.avatar ? 
+        { dataUrl: item.avatar, initials: '', backgroundColor: '' } : 
+        generateInitialsAvatar(item.name);
+      
+      const typeIcon = item.isCommunity ? 
+        `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#00a884]">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          <circle cx="20" cy="8" r="2"></circle>
+        </svg>` :
+        `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#00a884]">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>`;
+      
+      return `
+        <div class="group-item flex items-center p-3 hover:bg-[#202c33] cursor-pointer transition-colors" data-group-id="${item.id}">
+          <div class="w-12 h-12 rounded-full mr-4 overflow-hidden relative">
+            <img src="${avatarData.dataUrl}" alt="${item.name}" class="w-full h-full object-cover">
+            <div class="absolute bottom-0 right-0 w-4 h-4 bg-[#111b21] rounded-full flex items-center justify-center">
+              ${typeIcon}
+            </div>
+          </div>
+          <div class="flex-1">
+            <h3 class="text-white group-name">${item.name}</h3>
+            <p class="text-gray-400 text-sm">${item.status || (item.participants ? `${item.participants.length + 1} membres` : 'Groupe')}</p>
+            ${item.description ? `<p class="text-gray-500 text-xs truncate">${item.description}</p>` : ''}
+          </div>
+          <div class="text-gray-400">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 18l6-6-6-6"/>
+            </svg>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // Add click events
+    const groupItems = contactsList.querySelectorAll('.group-item');
+    groupItems.forEach(item => {
+      item.addEventListener('click', () => {
+        const groupId = item.dataset.groupId;
+        const selectedGroup = currentGroups.find(g => String(g.id) === String(groupId));
+        
+        console.log('Groupe/Communauté sélectionné:', selectedGroup);
+        
+        if (selectedGroup && onContactSelect) {
+          onContactSelect(selectedGroup);
+        }
+      });
+    });
+
+  } catch (error) {
+    console.error('Erreur lors du chargement des groupes:', error);
+    contactsList.innerHTML = `
+      <div class="flex flex-col items-center justify-center p-8 text-center">
+        <div class="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="15" y1="9" x2="9" y2="15"></line>
+            <line x1="9" y1="9" x2="15" y2="15"></line>
+          </svg>
+        </div>
+        <h3 class="text-white text-lg mb-2">Erreur de chargement</h3>
+        <p class="text-gray-400 text-sm">Impossible de charger les groupes et communautés</p>
+      </div>
+    `;
+  }
 }
 
 export async function renderNewDiscussionView(onContactSelect) {
@@ -157,12 +265,24 @@ export async function renderNewDiscussionView(onContactSelect) {
     </div>
   `;
 
-  // Section title for contacts
+  // Tabs pour basculer entre contacts et groupes
+  const tabsContainer = document.createElement('div');
+  tabsContainer.className = 'flex bg-[#111b21] border-b border-gray-700';
+  tabsContainer.innerHTML = `
+    <button id="contacts-tab" class="flex-1 py-3 px-4 text-center text-[#00a884] border-b-2 border-[#00a884] font-medium">
+      CONTACTS
+    </button>
+    <button id="groups-tab" class="flex-1 py-3 px-4 text-center text-gray-400 hover:text-white transition-colors">
+      GROUPES
+    </button>
+  `;
+
+  // Section title for contacts (sera mise à jour dynamiquement)
   const contactsHeader = document.createElement('div');
   contactsHeader.className = 'px-4 py-2 bg-[#111b21]';
   contactsHeader.innerHTML = `
     <div class="flex items-center justify-between">
-      <h3 class="text-[#00a884] text-sm font-medium">CONTACTS SUR WHATSAPP</h3>
+      <h3 id="section-title" class="text-[#00a884] text-sm font-medium">CONTACTS SUR WHATSAPP</h3>
       <button id="add-contact-btn" class="text-[#00a884] hover:text-[#06cf9c] transition-colors" title="Ajouter un contact">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -189,6 +309,7 @@ export async function renderNewDiscussionView(onContactSelect) {
   container.appendChild(header);
   container.appendChild(searchContainer);
   container.appendChild(optionsContainer);
+  container.appendChild(tabsContainer);
   container.appendChild(contactsHeader);
   container.appendChild(contactsList);
   
@@ -200,7 +321,14 @@ export async function renderNewDiscussionView(onContactSelect) {
   backButton.addEventListener('click', hideNewDiscussionView);
   
   const refreshButton = container.querySelector('#refresh-contacts-btn');
-  refreshButton.addEventListener('click', () => loadContacts(onContactSelect));
+  refreshButton.addEventListener('click', () => {
+    const activeTab = getActiveTab();
+    if (activeTab === 'contacts') {
+      loadContacts(onContactSelect);
+    } else {
+      loadGroupsAndCommunities(onContactSelect);
+    }
+  });
 
   const newGroupBtn = container.querySelector('#new-group-btn');
   newGroupBtn.addEventListener('click', () => handleNewGroup(onContactSelect));
@@ -211,11 +339,59 @@ export async function renderNewDiscussionView(onContactSelect) {
   const addContactBtn = container.querySelector('#add-contact-btn');
   addContactBtn.addEventListener('click', () => handleAddContact(onContactSelect));
 
+  // Tabs event listeners
+  const contactsTab = container.querySelector('#contacts-tab');
+  const groupsTab = container.querySelector('#groups-tab');
+  
+  contactsTab.addEventListener('click', () => {
+    switchTab('contacts', onContactSelect);
+  });
+  
+  groupsTab.addEventListener('click', () => {
+    switchTab('groups', onContactSelect);
+  });
+
   // Initialize events
   initNewDiscussionEvents(onContactSelect);
   
-  // Load and render contacts
+  // Load and render contacts by default
   await loadContacts(onContactSelect);
+}
+
+function getActiveTab() {
+  const contactsTab = document.getElementById('contacts-tab');
+  return contactsTab && contactsTab.classList.contains('text-[#00a884]') ? 'contacts' : 'groups';
+}
+
+function switchTab(tabName, onContactSelect) {
+  const contactsTab = document.getElementById('contacts-tab');
+  const groupsTab = document.getElementById('groups-tab');
+  const sectionTitle = document.getElementById('section-title');
+  const addContactBtn = document.getElementById('add-contact-btn');
+  
+  if (tabName === 'contacts') {
+    // Activer l'onglet contacts
+    contactsTab.className = 'flex-1 py-3 px-4 text-center text-[#00a884] border-b-2 border-[#00a884] font-medium';
+    groupsTab.className = 'flex-1 py-3 px-4 text-center text-gray-400 hover:text-white transition-colors';
+    
+    // Mettre à jour le titre et le bouton
+    sectionTitle.textContent = 'CONTACTS SUR WHATSAPP';
+    addContactBtn.style.display = 'block';
+    
+    // Charger les contacts
+    loadContacts(onContactSelect);
+  } else {
+    // Activer l'onglet groupes
+    groupsTab.className = 'flex-1 py-3 px-4 text-center text-[#00a884] border-b-2 border-[#00a884] font-medium';
+    contactsTab.className = 'flex-1 py-3 px-4 text-center text-gray-400 hover:text-white transition-colors';
+    
+    // Mettre à jour le titre et masquer le bouton d'ajout
+    sectionTitle.textContent = 'GROUPES ET COMMUNAUTÉS';
+    addContactBtn.style.display = 'none';
+    
+    // Charger les groupes et communautés
+    loadGroupsAndCommunities(onContactSelect);
+  }
 }
 
 async function loadContacts(onContactSelect) {
@@ -254,6 +430,24 @@ async function loadContacts(onContactSelect) {
         </div>
       `;
     }
+  }
+}
+
+async function loadGroupsAndCommunities(onContactSelect) {
+  try {
+    const contactsList = document.getElementById('contacts-list');
+    if (contactsList) {
+      contactsList.innerHTML = `
+        <div class="flex flex-col items-center justify-center p-8 text-center">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00a884] mb-4"></div>
+          <p class="text-gray-400">Chargement des groupes et communautés...</p>
+        </div>
+      `;
+    }
+
+    await renderGroupsAndCommunities(onContactSelect);
+  } catch (error) {
+    console.error('Erreur lors du chargement des groupes:', error);
   }
 }
 
@@ -353,9 +547,22 @@ async function initNewDiscussionEvents(onContactSelect) {
   if (searchInput) {
     searchInput.addEventListener('input', async (e) => {
       const query = e.target.value.trim();
+      const activeTab = getActiveTab();
+      
       try {
-        const filteredContacts = await searchContacts(query);
-        await renderContacts(filteredContacts, onContactSelect);
+        if (activeTab === 'contacts') {
+          const filteredContacts = await searchContacts(query);
+          await renderContacts(filteredContacts, onContactSelect);
+        } else {
+          // Recherche dans les groupes et communautés
+          const allChats = getAllChats();
+          const filteredGroups = allChats.filter(chat => 
+            (chat.isGroup || chat.isCommunity) && 
+            chat.name.toLowerCase().includes(query.toLowerCase())
+          );
+          currentGroups = filteredGroups;
+          await renderGroupsAndCommunities(onContactSelect);
+        }
       } catch (error) {
         console.error('Erreur lors de la recherche:', error);
       }

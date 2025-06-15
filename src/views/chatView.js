@@ -280,12 +280,15 @@ function createVoiceMessageElement(message) {
     waveform.appendChild(bar);
   }
   
-  // Durée du message vocal
+  // Durée du message vocal - CORRECTION ICI
   const duration = document.createElement('span');
   duration.className = `text-sm flex-shrink-0 font-mono ${
     message.isMe ? 'text-white text-opacity-80' : 'text-[#8696a0]'
   }`;
-  duration.textContent = message.duration || '0:00';
+  
+  // Utiliser la durée du message ou une valeur par défaut
+  const messageDuration = message.duration || '0:00';
+  duration.textContent = messageDuration;
   
   waveformContainer.appendChild(waveform);
   waveformContainer.appendChild(duration);
@@ -312,18 +315,27 @@ function createVoiceMessageElement(message) {
       
       // Nettoyer l'URL quand l'audio est chargé
       audio.addEventListener('loadedmetadata', () => {
-        totalDuration = audio.duration || 0;
-        duration.textContent = formatDuration(totalDuration);
+        totalDuration = audio.duration;
+        
+        // Vérifier que la durée est valide
+        if (isFinite(totalDuration) && totalDuration > 0) {
+          duration.textContent = formatDuration(totalDuration);
+        } else {
+          // Utiliser la durée du message si disponible
+          duration.textContent = messageDuration;
+        }
+        
         URL.revokeObjectURL(audioUrl); // Libérer la mémoire
       });
 
       // Gérer les erreurs de chargement
       audio.addEventListener('error', (e) => {
         console.error('Erreur de chargement audio:', e);
-        duration.textContent = '0:00';
+        duration.textContent = messageDuration;
       });
     } catch (error) {
       console.error('Erreur lors de la création de l\'audio:', error);
+      duration.textContent = messageDuration;
     }
   }
   
@@ -353,7 +365,7 @@ function createVoiceMessageElement(message) {
   
   // Événement de clic sur la forme d'onde pour naviguer
   waveform.addEventListener('click', (e) => {
-    if (!audio) return;
+    if (!audio || !isFinite(totalDuration) || totalDuration <= 0) return;
     
     const rect = waveform.getBoundingClientRect();
     const clickX = e.clientX - rect.left;
@@ -367,118 +379,102 @@ function createVoiceMessageElement(message) {
   waveformBars.forEach(bar => {
     if (message.isMe) {
       bar.classList.add('bg-white');
-      bar.classList.add('bg-opacity-40'); // Ajouter séparément
+      bar.classList.add('bg-opacity-40');
     } else {
       bar.classList.add('bg-[#8696a0]');
     }
   });
 
-  audio.addEventListener('timeupdate', () => {
-    // Vérifier que totalDuration est valide
-    if (!isFinite(totalDuration) || totalDuration <= 0) {
-      totalDuration = audio.duration;
-    }
-    
-    currentTime = audio.currentTime;
-    // Éviter la division par zéro
-    const progress = totalDuration > 0 ? currentTime / totalDuration : 0;
-    
-    // Mise à jour des barres pendant la lecture
-    waveformBars.forEach((bar, index) => {
-      if (!isFinite(progress)) return;
+  if (audio) {
+    audio.addEventListener('timeupdate', () => {
+      // Vérifier que totalDuration est valide
+      if (!isFinite(totalDuration) || totalDuration <= 0) {
+        totalDuration = audio.duration;
+      }
       
-      if (index / barCount <= progress) {
-        bar.classList.remove('bg-opacity-40');
-        bar.classList.remove('bg-[#8696a0]');
-        
-        if (message.isMe) {
-          bar.classList.add('bg-white');
-        } else {
-          bar.classList.add('bg-[#00a884]');
-        }
+      currentTime = audio.currentTime;
+      
+      // Éviter la division par zéro et vérifier que les valeurs sont valides
+      const progress = (isFinite(totalDuration) && totalDuration > 0) ? 
+                       currentTime / totalDuration : 0;
+      
+      // Mise à jour des barres pendant la lecture
+      if (isFinite(progress)) {
+        waveformBars.forEach((bar, index) => {
+          if (index / barCount <= progress) {
+            bar.classList.remove('bg-opacity-40', 'bg-[#8696a0]');
+            
+            if (message.isMe) {
+              bar.classList.add('bg-white');
+            } else {
+              bar.classList.add('bg-[#00a884]');
+            }
+          } else {
+            if (message.isMe) {
+              bar.classList.add('bg-white', 'bg-opacity-40');
+            } else {
+              bar.classList.add('bg-[#8696a0]');
+            }
+          }
+        });
+      }
+      
+      // Calculer le temps restant de manière sécurisée
+      const remaining = (isFinite(totalDuration) && isFinite(currentTime)) ? 
+                       Math.max(0, totalDuration - currentTime) : 0;
+      
+      if (remaining > 0) {
+        duration.textContent = formatDuration(remaining);
       } else {
-        if (message.isMe) {
-          bar.classList.add('bg-white');
-          bar.classList.add('bg-opacity-40'); // Ajouter séparément
-        } else {
-          bar.classList.add('bg-[#8696a0]');
-        }
+        duration.textContent = messageDuration;
       }
     });
     
-    // Vérifier que les valeurs sont valides avant de calculer remaining
-    const remaining = isFinite(totalDuration) && isFinite(currentTime) ? 
-                     totalDuration - currentTime : 0;
-    duration.textContent = formatDuration(remaining);
-  });
-  
-  audio.addEventListener('ended', () => {
-    isPlaying = false;
-    playButton.innerHTML = `
-      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" class="ml-0.5">
-        <polygon points="5 3 19 12 5 21 5 3"></polygon>
-      </svg>
-    `;
-    
-    // Réinitialiser la forme d'onde
-    waveformBars.forEach(bar => {
-      bar.classList.remove('bg-white', 'bg-[#00a884]');
-      if (message.isMe) {
-        bar.classList.add('bg-white');
-        bar.classList.add('bg-opacity-40'); // Ajouter séparément
-      } else {
-        bar.classList.add('bg-[#8696a0]');
-      }
-    });
-    
-    duration.textContent = formatDuration(totalDuration);
-  });
-  
-  // Événement de clic sur le bouton play/pause
-  playButton.addEventListener('click', () => {
-    if (!audio) return;
-    
-    if (isPlaying) {
-      audio.pause();
+    audio.addEventListener('ended', () => {
       isPlaying = false;
       playButton.innerHTML = `
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" class="ml-0.5">
           <polygon points="5 3 19 12 5 21 5 3"></polygon>
         </svg>
       `;
-    } else {
-      audio.play();
-      isPlaying = true;
-      playButton.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-          <rect x="6" y="4" width="4" height="16"></rect>
-          <rect x="14" y="4" width="4" height="16"></rect>
-        </svg>
-      `;
-    }
-  });
-  
-  // Événement de clic sur la forme d'onde pour naviguer
-  waveform.addEventListener('click', (e) => {
-    if (!audio) return;
-    
-    const rect = waveform.getBoundingClientRect();
-    const clickX = e.clientX - rect.left;
-    const progress = clickX / rect.width;
-    const newTime = progress * totalDuration;
-    
-    audio.currentTime = newTime;
-  });
+      
+      // Réinitialiser la forme d'onde
+      waveformBars.forEach(bar => {
+        bar.classList.remove('bg-white', 'bg-[#00a884]');
+        if (message.isMe) {
+          bar.classList.add('bg-white', 'bg-opacity-40');
+        } else {
+          bar.classList.add('bg-[#8696a0]');
+        }
+      });
+      
+      // Afficher la durée totale ou la durée du message
+      if (isFinite(totalDuration) && totalDuration > 0) {
+        duration.textContent = formatDuration(totalDuration);
+      } else {
+        duration.textContent = messageDuration;
+      }
+    });
+  }
 
   return voiceContainer;
 }
 
-// Fonction utilitaire pour formater la durée
+// Fonction utilitaire pour formater la durée - CORRECTION ICI
 function formatDuration(seconds) {
-  if (isNaN(seconds) || seconds < 0) return '0:00';
+  // Vérifier que seconds est un nombre valide
+  if (!isFinite(seconds) || isNaN(seconds) || seconds < 0) {
+    return '0:00';
+  }
   
   const minutes = Math.floor(seconds / 60);
   const remainingSeconds = Math.floor(seconds % 60);
+  
+  // Vérifier que les valeurs calculées sont valides
+  if (!isFinite(minutes) || !isFinite(remainingSeconds)) {
+    return '0:00';
+  }
+  
   return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
 }
 
