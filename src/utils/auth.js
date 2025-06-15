@@ -4,8 +4,23 @@ const API_CONFIG = {
     PRODUCTION: 'https://serveur2.onrender.com'
 };
 
-// Utiliser l'URL locale en développement
-const API_URL = 'http://localhost:3000';
+// Fonction pour détecter l'environnement et choisir l'URL appropriée
+function getApiUrl() {
+    // Si on est en développement local (localhost ou 127.0.0.1)
+    if (window.location.hostname === 'localhost' || 
+        window.location.hostname === '127.0.0.1' || 
+        window.location.hostname === '') {
+        return API_CONFIG.LOCAL;
+    }
+    // Sinon utiliser l'URL de production
+    return API_CONFIG.PRODUCTION;
+}
+
+// URL dynamique basée sur l'environnement
+const API_URL = getApiUrl();
+
+// Afficher l'URL utilisée dans la console pour debug
+console.log('🌐 API URL utilisée:', API_URL);
 
 // Utilitaires pour la gestion de l'authentification
 
@@ -105,6 +120,8 @@ export function formatPhoneNumber(phone, countryCode) {
  */
 export async function register(phoneNumber, firstName, lastName, countryCode = 'SN') {
     try {
+        console.log('🔄 Tentative d\'inscription avec API:', API_URL);
+        
         // Formater le numéro de téléphone
         const formattedPhone = phoneNumber.startsWith('+') ? phoneNumber : `+${countryCode}${phoneNumber}`;
 
@@ -129,7 +146,7 @@ export async function register(phoneNumber, firstName, lastName, countryCode = '
         // Vérifier si l'utilisateur existe déjà
         const response = await fetch(`${API_URL}/users`);
         if (!response.ok) {
-            throw new Error('Erreur de connexion au serveur');
+            throw new Error(`Erreur de connexion au serveur (${response.status})`);
         }
         
         const users = await response.json();
@@ -147,25 +164,28 @@ export async function register(phoneNumber, firstName, lastName, countryCode = '
         });
 
         if (!saveResponse.ok) {
-            throw new Error('Erreur lors de l\'enregistrement');
+            throw new Error(`Erreur lors de l'enregistrement (${saveResponse.status})`);
         }
 
         const savedUser = await saveResponse.json();
         localStorage.setItem('whatsapp_user', JSON.stringify(savedUser));
 
+        console.log('✅ Inscription réussie avec:', API_URL);
         return savedUser;
     } catch (error) {
-        console.error('Erreur d\'inscription:', error);
+        console.error('❌ Erreur d\'inscription:', error);
         throw error;
     }
 }
 
 export async function login(phoneNumber, countryCode = 'SN') {
     try {
+        console.log('🔄 Tentative de connexion avec API:', API_URL);
+        
         // Récupérer la liste des utilisateurs au lieu des contacts
         const response = await fetch(`${API_URL}/users`);
         if (!response.ok) {
-            throw new Error('Erreur de connexion au serveur');
+            throw new Error(`Erreur de connexion au serveur (${response.status})`);
         }
         
         const users = await response.json();
@@ -211,9 +231,10 @@ export async function login(phoneNumber, countryCode = 'SN') {
         // Stocker les infos utilisateur
         localStorage.setItem('whatsapp_user', JSON.stringify(updatedUser));
 
+        console.log('✅ Connexion réussie avec:', API_URL);
         return updatedUser;
     } catch (error) {
-        console.error('Erreur de connexion:', error);
+        console.error('❌ Erreur de connexion:', error);
         throw error;
     }
 }

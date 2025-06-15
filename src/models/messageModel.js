@@ -1,7 +1,25 @@
 import { updateLastMessage, createNewChat, getAllChats, getChatById } from './chatModel.js';
 import { getCurrentUser } from '../utils/auth.js';
 
-const API_URL = 'http://localhost:3000';
+// Configuration des URLs d'API
+const API_CONFIG = {
+    LOCAL: 'http://localhost:3000',
+    PRODUCTION: 'https://serveur2.onrender.com'
+};
+
+// Fonction pour détecter l'environnement et choisir l'URL appropriée
+function getApiUrl() {
+    // Si on est en développement local (localhost ou 127.0.0.1)
+    if (window.location.hostname === 'localhost' || 
+        window.location.hostname === '127.0.0.1' || 
+        window.location.hostname === '') {
+        return API_CONFIG.LOCAL;
+    }
+    // Sinon utiliser l'URL de production
+    return API_CONFIG.PRODUCTION;
+}
+
+const API_URL = getApiUrl();
 
 // Initialiser un objet vide pour les messages
 let messages = {};
