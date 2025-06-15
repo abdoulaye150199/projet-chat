@@ -3,6 +3,7 @@ import { renderAddContactModal } from './addContactModalView.js';
 import { renderCreateGroupModal } from './createGroupModalView.js';
 import { renderCreateCommunityModal } from './createCommunityModalView.js';
 import { generateInitialsAvatar } from '../utils/avatarGenerator.js';
+import { getCurrentUser } from '../utils/auth.js';
 
 let currentContacts = [];
 let currentGroups = [];
@@ -12,9 +13,16 @@ async function renderContacts(contacts, onContactSelect) {
   if (!contactsList) return;
 
   const contactsArray = Array.isArray(contacts) ? contacts : [];
-  currentContacts = contactsArray;
+  
+  // Filtrer pour exclure l'utilisateur actuel
+  const currentUser = getCurrentUser();
+  const filteredContacts = contactsArray.filter(contact => 
+    contact.id !== currentUser.id && contact.phone !== currentUser.phone
+  );
+  
+  currentContacts = filteredContacts;
 
-  if (contactsArray.length === 0) {
+  if (filteredContacts.length === 0) {
     contactsList.innerHTML = `
       <div class="flex flex-col items-center justify-center p-8 text-center">
         <div class="w-16 h-16 bg-[#2a3942] rounded-full flex items-center justify-center mb-4">
@@ -25,12 +33,15 @@ async function renderContacts(contacts, onContactSelect) {
         </div>
         <h3 class="text-white text-lg mb-2">Aucun contact disponible</h3>
         <p class="text-gray-400 text-sm">Les utilisateurs inscrits apparaîtront ici</p>
+        <button onclick="document.getElementById('add-contact-btn').click()" class="mt-4 px-4 py-2 bg-[#00a884] text-white rounded-lg hover:bg-[#06cf9c]">
+          Ajouter un contact
+        </button>
       </div>
     `;
     return;
   }
 
-  contactsList.innerHTML = contactsArray.map(contact => {
+  contactsList.innerHTML = filteredContacts.map(contact => {
     const avatarData = contact.avatar ? 
       { dataUrl: contact.avatar, initials: '', backgroundColor: '' } : 
       generateInitialsAvatar(contact.name);
@@ -104,6 +115,14 @@ async function renderGroupsAndCommunities(onContactSelect) {
           </div>
           <h3 class="text-white text-lg mb-2">Aucun groupe ou communauté</h3>
           <p class="text-gray-400 text-sm">Créez votre premier groupe ou communauté</p>
+          <div class="flex gap-2 mt-4">
+            <button onclick="document.getElementById('new-group-btn').click()" class="px-4 py-2 bg-[#00a884] text-white rounded-lg hover:bg-[#06cf9c]">
+              Nouveau groupe
+            </button>
+            <button onclick="document.getElementById('new-community-btn').click()" class="px-4 py-2 bg-[#00a884] text-white rounded-lg hover:bg-[#06cf9c]">
+              Nouvelle communauté
+            </button>
+          </div>
         </div>
       `;
       return;

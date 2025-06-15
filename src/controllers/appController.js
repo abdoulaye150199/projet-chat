@@ -6,6 +6,8 @@ import { initMenuController } from './menuController.js';
 import { initChatFilters } from '../views/chatView.js';
 import { initStatusController } from './statusController.js';
 
+let currentActiveChat = null;
+
 function initApp() {
   setCurrentUserAvatar();
   
@@ -33,6 +35,8 @@ function initNavigation() {
   const settingsBtn = document.getElementById('settings-btn');
 
   statusBtn.addEventListener('click', () => {
+    // Sauvegarder le chat actuel avant de changer de vue
+    saveCurrentChatState();
     switchTab('status');
     hideAllViews();
     renderStatusView();
@@ -42,25 +46,61 @@ function initNavigation() {
     switchTab('channels');
     hideAllViews();
     showChatList();
+    // Restaurer le chat actif si il y en avait un
+    restoreCurrentChatState();
   });
   
   chatsBtn.addEventListener('click', () => {
     switchTab('chats');
     hideAllViews();
     showChatList();
+    // Restaurer le chat actif si il y en avait un
+    restoreCurrentChatState();
   });
   
   communitiesBtn.addEventListener('click', () => {
     switchTab('communities');
     hideAllViews();
     showChatList();
+    // Restaurer le chat actif si il y en avait un
+    restoreCurrentChatState();
   });
   
   settingsBtn.addEventListener('click', () => {
+    // Sauvegarder le chat actuel avant de changer de vue
+    saveCurrentChatState();
     switchTab('settings');
     hideAllViews();
     renderSettingsView();
   });
+}
+
+function saveCurrentChatState() {
+  // Sauvegarder l'état du chat actuel
+  if (window.activeChat) {
+    currentActiveChat = window.activeChat;
+    console.log('Chat sauvegardé:', currentActiveChat);
+  }
+}
+
+function restoreCurrentChatState() {
+  // Restaurer le chat actif après être revenu aux discussions
+  if (currentActiveChat) {
+    console.log('Restauration du chat:', currentActiveChat);
+    
+    // Attendre que l'interface soit prête
+    setTimeout(() => {
+      // Réactiver le chat
+      window.activeChat = currentActiveChat;
+      
+      // Importer et utiliser les fonctions de chat
+      import('./chatController.js').then(module => {
+        // Simuler un clic sur le chat pour le réactiver
+        const event = new CustomEvent('chat-restore', { detail: currentActiveChat });
+        document.dispatchEvent(event);
+      });
+    }, 100);
+  }
 }
 
 function hideAllViews() {
@@ -76,17 +116,6 @@ function hideAllViews() {
       view.remove();
     }
   });
-  
-  // Masquer l'interface de chat
-  const welcomeScreen = document.getElementById('welcome-screen');
-  const messagesContainer = document.getElementById('messages-container');
-  const chatHeader = document.getElementById('chat-header');
-  const messageInput = document.getElementById('message-input-container');
-
-  if (welcomeScreen) welcomeScreen.style.display = 'flex';
-  if (messagesContainer) messagesContainer.style.display = 'none';
-  if (chatHeader) chatHeader.style.display = 'none';
-  if (messageInput) messageInput.style.display = 'none';
 }
 
 function showChatList() {

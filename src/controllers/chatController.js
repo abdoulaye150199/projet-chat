@@ -29,6 +29,13 @@ function initChat() {
     const updatedChats = getAllChats();
     renderChatList(updatedChats, handleChatClick);
   });
+
+  // Écouter l'événement de restauration de chat
+  document.addEventListener('chat-restore', async (event) => {
+    const chatToRestore = event.detail;
+    console.log('Restauration du chat:', chatToRestore);
+    await handleChatClick(chatToRestore);
+  });
 }
 
 function initNewChatButton() {
@@ -167,18 +174,21 @@ function showChatInterface() {
   
   if (messagesContainer) {
     messagesContainer.classList.remove('hidden');
+    messagesContainer.style.display = 'flex';
   }
   
   if (chatHeader) {
     chatHeader.classList.remove('hidden');
+    chatHeader.style.display = 'flex';
   }
   
   if (messageInput) {
     messageInput.classList.remove('hidden');
+    messageInput.style.display = 'flex';
   }
 }
 
-function handleChatClick(chat) {
+async function handleChatClick(chat) {
   if (!chat || !chat.id) {
     console.error('Invalid chat object');
     return;
@@ -192,7 +202,7 @@ function handleChatClick(chat) {
   // Gérer les messages non lus
   if (chat.unreadCount > 0) {
     markAsRead(chat.id);
-    markMessagesAsRead(chat.id);
+    markMessagesAsDelivered(chat.id);
     updateChatInList(getChatById(chat.id));
   }
 
@@ -204,7 +214,7 @@ function handleChatClick(chat) {
   renderChatHeader(chat);
   
   // Charger les messages de manière asynchrone
-  loadChatMessages(chat.id);
+  await loadChatMessages(chat.id);
 
   // Simuler la livraison des messages après un délai
   setTimeout(() => {
@@ -387,5 +397,6 @@ function simulateReply(chatId) {
 
 export { 
   initChat,
-  handleCreateGroup 
+  handleCreateGroup,
+  handleChatClick
 };

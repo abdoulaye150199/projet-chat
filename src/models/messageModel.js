@@ -230,6 +230,13 @@ async function syncReceivedMessages() {
             
             // Mettre à jour le chat avec le nouveau message
             await updateLastMessage(message.chatId, message.text);
+            
+            // Si le chat est actuellement actif, ajouter le message à l'interface
+            if (window.activeChat && window.activeChat.id == message.chatId) {
+              // Importer dynamiquement la fonction pour éviter les dépendances circulaires
+              const { addMessageToChat } = await import('../views/chatView.js');
+              addMessageToChat(receivedMessage);
+            }
           }
         }
         
@@ -257,7 +264,7 @@ async function getMessages(chatId) {
       const response = await fetch(`${API_URL}/messages`);
       if (response.ok) {
         const allMessages = await response.json();
-        const apiMessages = allMessages.filter(msg => msg.chatId === chatId);
+        const apiMessages = allMessages.filter(msg => msg.chatId == chatId);
         
         // Fusionner les messages locaux et de l'API
         const allChatMessages = [...localMessages];
@@ -268,7 +275,7 @@ async function getMessages(chatId) {
             const currentUser = getCurrentUser();
             allChatMessages.push({
               ...apiMsg,
-              isMe: apiMsg.senderId === currentUser.id
+              isMe: apiMsg.senderId == currentUser.id
             });
           }
         });
@@ -294,6 +301,45 @@ async function getMessages(chatId) {
   } catch (error) {
     console.error('Erreur getMessages:', error);
     return getMessagesByChatId(chatId);
+  }
+}
+
+// Fonction pour marquer les messages comme lus
+async function markMessagesAsRead(chatId) {
+  try {
+    loadMessages();
+    const chatMessages = messages[chatId] || [];
+    
+    // Marquer tous les messages reçus comme lus
+    chatMessages.forEach(message => {
+      if (!message.isMe) {
+        message.read = true;
+      }
+    });
+    
+    saveMessages();
+    
+    // Mettre à jour sur le serveur
+    for (const message of chatMessages) {
+      if (!message.isMe && !message.read) {
+        try {
+          await fetch(`${API_URL}/messages/${message.id}`, {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ read: true })
+          });
+        } catch (apiError) {
+          console.warn('API error updating message read status:', apiError);
+        }
+      }
+    }
+    
+    return chatMessages;
+  } catch (error) {
+    console.error('Erreur markMessagesAsRead:', error);
+    return [];
   }
 }
 
@@ -361,6 +407,7 @@ export {
   saveMessages,
   getMessages,
   markMessagesAsDelivered,
+  markMessagesAsRead,
   syncReceivedMessages,
   getMessagesForUser,
   getNotificationsForUser
