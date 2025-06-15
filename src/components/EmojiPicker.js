@@ -122,7 +122,8 @@ class EmojiPicker {
   create() {
     this.container = document.createElement('div');
     this.container.id = 'emoji-picker';
-    this.container.className = 'fixed bottom-20 left-4 w-[350px] h-[400px] bg-[#2a3942] rounded-lg shadow-2xl border border-gray-600 z-50 hidden';
+    // Modifier uniquement le positionnement
+    this.container.className = 'fixed bottom-20 left-20 w-[600px] h-[400px] bg-[#2a3942] rounded-lg shadow-2xl border border-gray-600 z-50 hidden';
     
     this.container.innerHTML = `
       <div class="flex flex-col h-full">
