@@ -1,24 +1,26 @@
 import { defineConfig } from 'vite'
 
 export default defineConfig({
+  base: './',
   build: {
     outDir: 'dist',
     rollupOptions: {
       input: {
-        main: 'index.html'
+        main: './index.html',
+        login: './login.html',
+        register: './register.html'
       },
       output: {
-        format: 'es',
-        entryFileNames: 'assets/[name]-[hash].js',
-        chunkFileNames: 'assets/[name]-[hash].js',
-        assetFileNames: 'assets/[name]-[hash][extname]'
+        assetFileNames: 'assets/[name].[hash].[ext]',
+        chunkFileNames: 'assets/[name].[hash].js',
+        entryFileNames: 'assets/[name].[hash].js'
       }
     },
-    target: 'es2015',
-    sourcemap: false
+    assetsDir: 'assets',
+    cssCodeSplit: false
   },
   server: {
     port: 5173,
-    host: true
+    open: true
   }
 })
