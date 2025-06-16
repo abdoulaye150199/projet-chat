@@ -93,12 +93,57 @@ async function addMessage(chatId, text, isMe = true, recipientId = null) {
     // Si c'est un message envoyé, créer une notification pour le destinataire
     if (isMe && recipientId) {
       await createMessageNotification(message, recipientId);
+      
+      // Vérifier si le destinataire est un utilisateur inscrit
+      await checkAndNotifyRegisteredUser(message, recipientId);
     }
 
     return message;
   } catch (error) {
     console.error('Erreur addMessage:', error);
     throw error;
+  }
+}
+
+// Nouvelle fonction pour vérifier et notifier les utilisateurs inscrits
+async function checkAndNotifyRegisteredUser(message, recipientId) {
+  try {
+    // Récupérer tous les utilisateurs inscrits
+    const usersResponse = await fetch(`${API_URL}/users`);
+    if (!usersResponse.ok) return;
+    
+    const users = await usersResponse.json();
+    const recipient = users.find(user => user.id == recipientId);
+    
+    if (recipient) {
+      console.log('Message envoyé à un utilisateur inscrit:', recipient.name);
+      
+      // Créer une notification spéciale pour les utilisateurs inscrits
+      const notification = {
+        id: Date.now().toString(),
+        type: 'message_from_user',
+        senderId: message.senderId,
+        recipientId: recipientId,
+        messageId: message.id,
+        chatId: message.chatId,
+        content: message.text,
+        timestamp: new Date().toISOString(),
+        read: false,
+        priority: 'high' // Priorité élevée pour les messages entre utilisateurs inscrits
+      };
+
+      await fetch(`${API_URL}/notifications`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(notification)
+      });
+      
+      console.log('Notification créée pour l\'utilisateur inscrit');
+    }
+  } catch (error) {
+    console.warn('Erreur lors de la vérification de l\'utilisateur inscrit:', error);
   }
 }
 
@@ -171,7 +216,7 @@ async function getNotificationsForUser(userId) {
 
     const notifications = await response.json();
     return notifications.filter(notif => 
-      notif.recipientId === userId && !notif.read
+      notif.recipientId == userId && !notif.read
     );
   } catch (error) {
     console.warn('Erreur getNotificationsForUser:', error);
@@ -203,7 +248,7 @@ async function syncReceivedMessages() {
     const notifications = await getNotificationsForUser(currentUser.id);
     
     for (const notification of notifications) {
-      if (notification.type === 'message') {
+      if (notification.type === 'message' || notification.type === 'message_from_user') {
         // Récupérer le message complet
         const messageResponse = await fetch(`${API_URL}/messages/${notification.messageId}`);
         if (messageResponse.ok) {
@@ -244,6 +289,11 @@ async function syncReceivedMessages() {
             // Émettre un événement pour rafraîchir la liste des chats
             const event = new CustomEvent('refresh-chat-list');
             document.dispatchEvent(event);
+            
+            // Afficher une notification si c'est un message d'un utilisateur inscrit
+            if (notification.type === 'message_from_user') {
+              await showInAppNotification(message, notification);
+            }
           }
         }
         
@@ -253,6 +303,53 @@ async function syncReceivedMessages() {
     }
   } catch (error) {
     console.error('Erreur syncReceivedMessages:', error);
+  }
+}
+
+// Fonction pour afficher une notification dans l'app
+async function showInAppNotification(message, notification) {
+  try {
+    // Récupérer les informations de l'expéditeur
+    const senderResponse = await fetch(`${API_URL}/users/${message.senderId}`);
+    if (senderResponse.ok) {
+      const sender = await senderResponse.json();
+      
+      // Créer une notification visuelle
+      const notificationElement = document.createElement('div');
+      notificationElement.className = 'fixed top-4 right-4 bg-[#00a884] text-white p-4 rounded-lg shadow-lg z-50 max-w-sm';
+      notificationElement.innerHTML = `
+        <div class="flex items-center">
+          <img src="${sender.avatar || `https://api.dicebear.com/6.x/initials/svg?seed=${sender.name}`}" 
+               alt="${sender.name}" 
+               class="w-10 h-10 rounded-full mr-3">
+          <div class="flex-1">
+            <div class="font-medium">${sender.name}</div>
+            <div class="text-sm opacity-90">${message.text}</div>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(notificationElement);
+      
+      // Supprimer la notification après 5 secondes
+      setTimeout(() => {
+        if (notificationElement.parentNode) {
+          notificationElement.remove();
+        }
+      }, 5000);
+      
+      // Ajouter un clic pour ouvrir le chat
+      notificationElement.addEventListener('click', () => {
+        // Ouvrir le chat correspondant
+        const chatClickEvent = new CustomEvent('open-chat', { 
+          detail: { chatId: message.chatId, senderId: message.senderId } 
+        });
+        document.dispatchEvent(chatClickEvent);
+        notificationElement.remove();
+      });
+    }
+  } catch (error) {
+    console.error('Erreur lors de l\'affichage de la notification:', error);
   }
 }
 

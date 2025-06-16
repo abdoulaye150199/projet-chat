@@ -4,7 +4,7 @@ import { renderSettingsView, hideSettingsView } from '../views/settingsView.js';
 import { renderStatusView, hideStatusView } from '../views/statusView.js';
 import { initMenuController } from './menuController.js';
 import { initChatFilters } from '../views/chatView.js';
-import { initStatusController } from './statusController.js';
+import { initStatusController, startStatusSync } from './statusController.js';
 
 let currentActiveChat = null;
 
@@ -16,6 +16,9 @@ function initApp() {
   initStatusController();
   initMenuController();
   initNavigation();
+  
+  // Démarrer la synchronisation des statuts
+  startStatusSync();
 }
 
 function setCurrentUserAvatar() {
