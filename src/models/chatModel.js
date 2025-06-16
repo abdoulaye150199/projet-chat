@@ -215,55 +215,63 @@ async function getAllContacts() {
     }
 
     // Récupérer les contacts sauvegardés localement
-    const savedContacts = localStorage.getItem('whatsapp_contacts');
-    const localContacts = savedContacts ? JSON.parse(savedContacts) : [];
+    const savedContacts = localStorage.getItem('whatsapp_contacts') || '[]';
+    const localContacts = JSON.parse(savedContacts);
 
     // Récupérer tous les utilisateurs inscrits
-    const response = await fetch(`${API_URL}/users`);
-    if (!response.ok) {
-      throw new Error('Erreur lors de la récupération des utilisateurs');
+    let registeredContacts = [];
+    try {
+      const response = await fetch(`${API_URL}/users`);
+      if (response.ok) {
+        const users = await response.json();
+        registeredContacts = users
+          .filter(user => user.id !== currentUser.id)
+          .map(user => ({
+            id: user.id,
+            name: user.name || `${user.firstName} ${user.lastName}`,
+            phone: user.phone,
+            status: user.status || "Hey! J'utilise WhatsApp",
+            online: user.isOnline || false,
+            avatar: user.avatar || generateInitialsAvatar(user.name || `${user.firstName} ${user.lastName}`).dataUrl,
+            lastSeen: user.lastSeen,
+            isRegistered: true
+          }));
+      }
+    } catch (error) {
+      console.warn('Erreur API, utilisation des données locales:', error);
     }
-    
-    const users = await response.json();
-    
-    // Convertir les utilisateurs inscrits en contacts
-    const registeredContacts = users
-      .filter(user => user.id !== currentUser.id && user.phone !== currentUser.phone)
-      .map(user => ({
-        id: user.id,
-        name: user.name || `${user.firstName} ${user.lastName}`,
-        phone: user.phone,
-        status: user.status || "Hey! J'utilise WhatsApp",
-        online: user.isOnline || false,
-        avatar: user.avatar || generateInitialsAvatar(user.name || `${user.firstName} ${user.lastName}`).dataUrl,
-        lastSeen: user.lastSeen,
-        isRegistered: true
-      }));
 
-    // Combiner les contacts inscrits et non inscrits
-    const allContacts = [...registeredContacts];
+    // Fusionner les contacts tout en évitant les doublons par numéro de téléphone
+    const phoneNumbers = new Set();
+    const allContacts = [];
 
-    // Ajouter les contacts non inscrits
+    // Ajouter d'abord les contacts inscrits
+    registeredContacts.forEach(contact => {
+      phoneNumbers.add(contact.phone);
+      allContacts.push(contact);
+    });
+
+    // Ajouter les contacts locaux non inscrits
     localContacts.forEach(contact => {
-      if (!registeredContacts.some(rc => rc.phone === contact.phone)) {
+      if (!phoneNumbers.has(contact.phone)) {
+        phoneNumbers.add(contact.phone);
         allContacts.push({
           ...contact,
           status: "N'utilise pas encore WhatsApp",
           online: false,
-          avatar: generateInitialsAvatar(contact.name || contact.phone).dataUrl,
+          avatar: contact.avatar || generateInitialsAvatar(contact.name || contact.phone).dataUrl,
           isRegistered: false
         });
       }
     });
 
-    // Sauvegarder la liste combinée
+    // Sauvegarder la liste mise à jour
     localStorage.setItem('whatsapp_contacts', JSON.stringify(allContacts));
 
     return allContacts;
 
   } catch (error) {
     console.error('Erreur lors de la récupération des contacts:', error);
-    // En cas d'erreur, retourner les contacts locaux
     const savedContacts = localStorage.getItem('whatsapp_contacts');
     return savedContacts ? JSON.parse(savedContacts) : [];
   }
@@ -517,40 +525,32 @@ async function addNewContact(contactData) {
       throw new Error('Aucun utilisateur connecté');
     }
 
-    // Check if contact already exists
+    // Vérifier si le contact existe déjà localement
     const contacts = await getAllContacts();
-    const existingContact = contacts.find(c => c.phone === contactData.phone);
-    if (existingContact) {
+    if (contacts.some(c => c.phone === contactData.phone)) {
       throw new Error('Ce numéro existe déjà');
     }
 
-    // Create new contact
+    // Créer le nouveau contact
     const newContact = {
-      ...contactData,
       id: Date.now().toString(),
-      createdAt: new Date().toISOString(),
-      userId: currentUser.id
+      name: contactData.name,
+      phone: contactData.phone,
+      status: "N'utilise pas encore WhatsApp",
+      online: false,
+      avatar: contactData.avatar || generateInitialsAvatar(contactData.name).dataUrl,
+      isRegistered: false,
+      createdAt: new Date().toISOString()
     };
 
-    try {
-      // Save to API
-      const response = await fetch(`${API_URL}/contacts`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(newContact)
-      });
+    // Sauvegarder dans le localStorage
+    const savedContacts = localStorage.getItem('whatsapp_contacts') || '[]';
+    const localContacts = JSON.parse(savedContacts);
+    localContacts.push(newContact);
+    localStorage.setItem('whatsapp_contacts', JSON.stringify(localContacts));
 
-      if (!response.ok) {
-        throw new Error('Erreur lors de l\'ajout du contact');
-      }
+    return newContact;
 
-      return await response.json();
-    } catch (apiError) {
-      console.warn('API error, saving locally:', apiError);
-      return newContact;
-    }
   } catch (error) {
     console.error('Error in addNewContact:', error);
     throw error;
