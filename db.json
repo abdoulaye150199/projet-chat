@@ -255,6 +255,42 @@
         "1749905609434",
         "1750076588317"
       ]
+    },
+    {
+      "id": 1750110928791,
+      "contactId": "1750023684131",
+      "name": "Abdoulaye Diallo",
+      "lastMessage": "",
+      "timestamp": "21:55:28",
+      "unreadCount": 0,
+      "avatar": "https://api.dicebear.com/6.x/initials/svg?seed=Abdoulaye Diallo",
+      "online": false,
+      "status": "Hey! J'utilise WhatsApp",
+      "messages": [],
+      "isGroup": false,
+      "isCommunity": false,
+      "participants": [
+        "1749633358808",
+        "1750023684131"
+      ]
+    },
+    {
+      "id": 1750110948756,
+      "contactId": "1750110946805",
+      "name": "sdd",
+      "lastMessage": "",
+      "timestamp": "21:55:48",
+      "unreadCount": 0,
+      "avatar": "data:image/png;base64,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",
+      "online": false,
+      "status": "N'utilise pas encore WhatsApp",
+      "messages": [],
+      "isGroup": false,
+      "isCommunity": false,
+      "participants": [
+        "1749633358808",
+        "1750110946805"
+      ]
     }
   ],
   "messages": [
@@ -309,6 +345,32 @@
       "delivered": true,
       "read": false,
       "createdAt": "2025-06-16T12:58:54.761Z"
+    },
+    {
+      "id": "1750110934892",
+      "chatId": 1750110928791,
+      "senderId": "1749633358808",
+      "recipientId": "1750023684131",
+      "text": "sal",
+      "timestamp": "21:55",
+      "isMe": true,
+      "sent": true,
+      "delivered": true,
+      "read": false,
+      "createdAt": "2025-06-16T21:55:34.892Z"
+    },
+    {
+      "id": "1750110953273",
+      "chatId": 1750110948756,
+      "senderId": "1749633358808",
+      "recipientId": "1750110946805",
+      "text": "salut",
+      "timestamp": "21:55",
+      "isMe": true,
+      "sent": true,
+      "delivered": true,
+      "read": false,
+      "createdAt": "2025-06-16T21:55:53.273Z"
     }
   ],
   "notifications": [
@@ -355,6 +417,28 @@
       "content": "🇧🇴🇧🇴",
       "timestamp": "2025-06-16T12:58:54.785Z",
       "read": true
+    },
+    {
+      "id": "1750110934927",
+      "type": "message",
+      "senderId": "1749633358808",
+      "recipientId": "1750023684131",
+      "messageId": "1750110934892",
+      "chatId": 1750110928791,
+      "content": "sal",
+      "timestamp": "2025-06-16T21:55:34.927Z",
+      "read": false
+    },
+    {
+      "id": "1750110953294",
+      "type": "message",
+      "senderId": "1749633358808",
+      "recipientId": "1750110946805",
+      "messageId": "1750110953273",
+      "chatId": 1750110948756,
+      "content": "salut",
+      "timestamp": "2025-06-16T21:55:53.294Z",
+      "read": false
     }
   ]
 }

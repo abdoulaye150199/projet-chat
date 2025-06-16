@@ -135,7 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             await new Promise(resolve => setTimeout(resolve, 2000));
             
-            register(localNumber, firstName, lastName, selectedCountry.code);
+            await register(localNumber, firstName, lastName, selectedCountry.code);
             window.location.replace('./index.html');
             
         } catch (error) {
@@ -147,53 +147,3 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
-
-function formatPhoneNumber(phone, countryCode) {
-  // Supprimer tous les caractères non numériques
-  const cleanPhone = phone.replace(/\D/g, '');
-  
-  // Mapping des codes pays
-  const countryMapping = {
-    'SN': '221',
-    // Ajouter d'autres pays au besoin
-  };
-  
-  // Obtenir le code du pays à partir du mapping
-  const dialCode = countryMapping[countryCode] || countryCode;
-  
-  // Si le numéro commence déjà par le code pays, ne pas l'ajouter
-  if (cleanPhone.startsWith(dialCode)) {
-    return `+${cleanPhone}`;
-  }
-  
-  // Sinon, ajouter le code pays
-  return `+${dialCode} ${cleanPhone}`;
-}
-
-async function registerUser(userData) {
-  try {
-    const formattedPhone = formatPhoneNumber(userData.phone, userData.countryCode);
-    
-    const newUser = {
-      id: Date.now().toString(),
-      phone: formattedPhone,
-      firstName: userData.firstName,
-      lastName: userData.lastName,
-      name: `${userData.firstName} ${userData.lastName}`,
-      countryCode: userData.countryCode,
-      status: "Hey! J'utilise WhatsApp",
-      online: true,
-      avatar: `https://api.dicebear.com/6.x/initials/svg?seed=${userData.firstName} ${userData.lastName}`,
-      registeredAt: new Date().toISOString(),
-      lastLogin: new Date().toISOString(),
-      lastSeen: new Date().toISOString(),
-      isOnline: true,
-      createdAt: new Date().toISOString()
-    };
-
-    // ...reste du code d'enregistrement
-  } catch (error) {
-    console.error('Erreur lors de l\'enregistrement:', error);
-    throw error;
-  }
-}

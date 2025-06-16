@@ -8,7 +8,6 @@ import {
   StickerIcon,
   EventIcon 
 } from '../utils/icons.js';
-import { handleFileUpload, formatFileSize } from './chatView2.js';
 
 const attachmentItems = [
   { 
@@ -485,4 +484,17 @@ export function hideAttachmentModal() {
 function getColorFromBgClass(bgClass) {
   const colorMatch = bgClass.match(/#[0-9A-Fa-f]{6}/);
   return colorMatch ? colorMatch[0] : '#ffffff';
+}
+
+// Fonction utilitaire pour formater la taille des fichiers
+function formatFileSize(bytes) {
+  if (!bytes || bytes === 0) return '0 Bytes';
+  
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  
+  if (i === 0) return bytes + ' ' + sizes[i];
+  
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }

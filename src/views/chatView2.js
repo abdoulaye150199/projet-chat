@@ -1,6 +1,5 @@
 // Nouveau fichier pour séparer les fonctionnalités de chat
 import { EmojiPicker } from '../components/EmojiPicker.js';
-import { addMessage } from '../models/messageModel.js';
 
 let mediaRecorder = null;
 let audioChunks = [];
