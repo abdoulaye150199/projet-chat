@@ -94,8 +94,15 @@ async function renderGroupsAndCommunities(onContactSelect) {
   if (!contactsList) return;
 
   try {
-    // Récupérer tous les chats (incluant groupes et communautés)
-    const allChats = getAllChats();
+    // Récupérer tous les chats de manière asynchrone
+    const allChats = await getAllChats(); // Ajouter await ici
+    
+    // Vérifier que allChats est un tableau
+    if (!Array.isArray(allChats)) {
+      console.error('getAllChats n\'a pas retourné un tableau:', allChats);
+      throw new Error('Format de données invalide');
+    }
+
     const groupsAndCommunities = allChats.filter(chat => 
       chat.isGroup || chat.isCommunity
     );
@@ -254,10 +261,22 @@ export async function renderNewDiscussionView(onContactSelect) {
     </div>
   `;
   
-  // Options (Group, Community, New Contact)
+  // Options (New Contact, Group, Community)
   const optionsContainer = document.createElement('div');
   optionsContainer.className = 'border-b border-gray-700';
   optionsContainer.innerHTML = `
+    <div id="new-contact-btn" class="cursor-pointer hover:bg-[#202c33] p-3 flex items-center transition-colors">
+      <div class="w-12 h-12 rounded-full bg-[#00a884] flex items-center justify-center mr-4">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+          <line x1="19" y1="8" x2="19" y2="14"></line>
+          <line x1="22" y1="11" x2="16" y2="11"></line>
+        </svg>
+      </div>
+      <span class="text-white">Nouveau contact</span>
+    </div>
+    
     <div id="new-group-btn" class="cursor-pointer hover:bg-[#202c33] p-3 flex items-center transition-colors">
       <div class="w-12 h-12 rounded-full bg-[#00a884] flex items-center justify-center mr-4">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -348,6 +367,9 @@ export async function renderNewDiscussionView(onContactSelect) {
       loadGroupsAndCommunities(onContactSelect);
     }
   });
+
+  const newContactBtn = container.querySelector('#new-contact-btn');
+  newContactBtn.addEventListener('click', () => handleAddContact(onContactSelect));
 
   const newGroupBtn = container.querySelector('#new-group-btn');
   newGroupBtn.addEventListener('click', () => handleNewGroup(onContactSelect));
@@ -481,6 +503,28 @@ export function hideNewDiscussionView() {
   }
 }
 
+async function handleAddContact(onContactSelect) {
+  console.log('Ajout d\'un nouveau contact');
+  try {
+    renderAddContactModal();
+    
+    // Écouter l'événement d'ajout de contact
+    document.addEventListener('contact-added', async (event) => {
+      const newContact = event.detail;
+      console.log('Nouveau contact ajouté:', newContact);
+      
+      // Rafraîchir la liste des contacts
+      await loadContacts(onContactSelect);
+      
+      showNotification('Contact ajouté avec succès!');
+    }, { once: true });
+    
+  } catch (error) {
+    console.error('Erreur lors de l\'ajout du contact:', error);
+    showNotification('Erreur lors de l\'ajout du contact', 'error');
+  }
+}
+
 async function handleNewGroup(onContactSelect) {
   console.log('Création d\'un nouveau groupe');
   try {
@@ -539,28 +583,6 @@ async function handleNewCommunity(onContactSelect) {
   }
 }
 
-async function handleAddContact(onContactSelect) {
-  console.log('Ajout d\'un nouveau contact');
-  try {
-    renderAddContactModal();
-    
-    // Écouter l'événement d'ajout de contact
-    document.addEventListener('contact-added', async (event) => {
-      const newContact = event.detail;
-      console.log('Nouveau contact ajouté:', newContact);
-      
-      // Rafraîchir la liste des contacts
-      await loadContacts(onContactSelect);
-      
-      showNotification('Contact ajouté avec succès!');
-    }, { once: true });
-    
-  } catch (error) {
-    console.error('Erreur lors de l\'ajout du contact:', error);
-    showNotification('Erreur lors de l\'ajout du contact', 'error');
-  }
-}
-
 async function initNewDiscussionEvents(onContactSelect) {
   const searchInput = document.getElementById('contact-search');
   if (searchInput) {
@@ -574,13 +596,15 @@ async function initNewDiscussionEvents(onContactSelect) {
           await renderContacts(filteredContacts, onContactSelect);
         } else {
           // Recherche dans les groupes et communautés
-          const allChats = getAllChats();
-          const filteredGroups = allChats.filter(chat => 
-            (chat.isGroup || chat.isCommunity) && 
-            chat.name.toLowerCase().includes(query.toLowerCase())
-          );
-          currentGroups = filteredGroups;
-          await renderGroupsAndCommunities(onContactSelect);
+          const allChats = await getAllChats(); // Ajouter await ici
+          if (Array.isArray(allChats)) {
+            const filteredGroups = allChats.filter(chat => 
+              (chat.isGroup || chat.isCommunity) && 
+              chat.name.toLowerCase().includes(query.toLowerCase())
+            );
+            currentGroups = filteredGroups;
+            await renderGroupsAndCommunities(onContactSelect);
+          }
         }
       } catch (error) {
         console.error('Erreur lors de la recherche:', error);

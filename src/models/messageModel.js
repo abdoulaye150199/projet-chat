@@ -231,12 +231,19 @@ async function syncReceivedMessages() {
             // Mettre à jour le chat avec le nouveau message
             await updateLastMessage(message.chatId, message.text);
             
+            // Créer le chat s'il n'existe pas
+            await ensureChatExists(message.chatId, message.senderId);
+            
             // Si le chat est actuellement actif, ajouter le message à l'interface
             if (window.activeChat && window.activeChat.id == message.chatId) {
               // Importer dynamiquement la fonction pour éviter les dépendances circulaires
               const { addMessageToChat } = await import('../views/chatView.js');
               addMessageToChat(receivedMessage);
             }
+
+            // Émettre un événement pour rafraîchir la liste des chats
+            const event = new CustomEvent('refresh-chat-list');
+            document.dispatchEvent(event);
           }
         }
         
@@ -246,6 +253,38 @@ async function syncReceivedMessages() {
     }
   } catch (error) {
     console.error('Erreur syncReceivedMessages:', error);
+  }
+}
+
+// Fonction pour s'assurer qu'un chat existe
+async function ensureChatExists(chatId, senderId) {
+  try {
+    const currentUser = getCurrentUser();
+    if (!currentUser) return;
+
+    // Vérifier si le chat existe déjà
+    const existingChat = await getChatById(chatId);
+    if (existingChat) return existingChat;
+
+    // Récupérer les informations de l'expéditeur
+    const senderResponse = await fetch(`${API_URL}/users/${senderId}`);
+    if (senderResponse.ok) {
+      const sender = await senderResponse.json();
+      
+      // Créer le chat avec l'expéditeur
+      const contact = {
+        id: sender.id,
+        name: sender.name || `${sender.firstName} ${sender.lastName}`,
+        phone: sender.phone,
+        status: sender.status || "Hey! J'utilise WhatsApp",
+        online: sender.isOnline || false,
+        avatar: sender.avatar || `https://api.dicebear.com/6.x/initials/svg?seed=${sender.name}`
+      };
+
+      return await createNewChat(contact);
+    }
+  } catch (error) {
+    console.error('Erreur ensureChatExists:', error);
   }
 }
 

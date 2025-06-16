@@ -37,7 +37,40 @@ function saveChats() {
   localStorage.setItem('whatsapp_chats', JSON.stringify(chats));
 }
 
-function getAllChats() {
+async function getAllChats() {
+  try {
+    const currentUser = getCurrentUser();
+    if (!currentUser) {
+      loadChats();
+      return [...chats];
+    }
+
+    // Récupérer tous les chats depuis l'API
+    const response = await fetch(`${API_URL}/chats`);
+    if (response.ok) {
+      const allChats = await response.json();
+      
+      // Filtrer les chats où l'utilisateur actuel est participant
+      const userChats = allChats.filter(chat => {
+        // Pour les chats individuels
+        if (!chat.isGroup && !chat.isCommunity) {
+          return chat.participants && chat.participants.includes(currentUser.id);
+        }
+        // Pour les groupes et communautés
+        return chat.participants && chat.participants.includes(currentUser.id);
+      });
+      
+      // Mettre à jour le localStorage
+      chats = userChats;
+      saveChats();
+      
+      return userChats;
+    }
+  } catch (error) {
+    console.warn('Failed to fetch chats from API, using local data:', error);
+  }
+
+  // Fallback vers localStorage
   loadChats();
   return [...chats];
 }
@@ -181,6 +214,10 @@ async function getAllContacts() {
       return [];
     }
 
+    // Récupérer les contacts sauvegardés localement
+    const savedContacts = localStorage.getItem('whatsapp_contacts');
+    const localContacts = savedContacts ? JSON.parse(savedContacts) : [];
+
     // Récupérer tous les utilisateurs inscrits
     const response = await fetch(`${API_URL}/users`);
     if (!response.ok) {
@@ -189,8 +226,8 @@ async function getAllContacts() {
     
     const users = await response.json();
     
-    // Filtrer pour exclure l'utilisateur actuel et convertir en format contact
-    const contacts = users
+    // Convertir les utilisateurs inscrits en contacts
+    const registeredContacts = users
       .filter(user => user.id !== currentUser.id && user.phone !== currentUser.phone)
       .map(user => ({
         id: user.id,
@@ -199,29 +236,63 @@ async function getAllContacts() {
         status: user.status || "Hey! J'utilise WhatsApp",
         online: user.isOnline || false,
         avatar: user.avatar || generateInitialsAvatar(user.name || `${user.firstName} ${user.lastName}`).dataUrl,
-        lastSeen: user.lastSeen
+        lastSeen: user.lastSeen,
+        isRegistered: true
       }));
 
-    return contacts;
+    // Combiner les contacts inscrits et non inscrits
+    const allContacts = [...registeredContacts];
+
+    // Ajouter les contacts non inscrits
+    localContacts.forEach(contact => {
+      if (!registeredContacts.some(rc => rc.phone === contact.phone)) {
+        allContacts.push({
+          ...contact,
+          status: "N'utilise pas encore WhatsApp",
+          online: false,
+          avatar: generateInitialsAvatar(contact.name || contact.phone).dataUrl,
+          isRegistered: false
+        });
+      }
+    });
+
+    // Sauvegarder la liste combinée
+    localStorage.setItem('whatsapp_contacts', JSON.stringify(allContacts));
+
+    return allContacts;
+
   } catch (error) {
     console.error('Erreur lors de la récupération des contacts:', error);
-    return [];
+    // En cas d'erreur, retourner les contacts locaux
+    const savedContacts = localStorage.getItem('whatsapp_contacts');
+    return savedContacts ? JSON.parse(savedContacts) : [];
   }
 }
 
-// Rechercher des contacts parmi les utilisateurs inscrits
-async function searchContacts(query) {
+// Ajouter cette fonction pour sauvegarder un nouveau contact non inscrit
+async function addUnregisteredContact(contactData) {
   try {
-    const contacts = await getAllContacts();
-    if (!query) return contacts;
-    
-    return contacts.filter(contact => 
-      contact.name.toLowerCase().includes(query.toLowerCase()) ||
-      contact.phone.includes(query)
-    );
+    const savedContacts = localStorage.getItem('whatsapp_contacts');
+    const contacts = savedContacts ? JSON.parse(savedContacts) : [];
+
+    const newContact = {
+      id: Date.now().toString(),
+      name: contactData.name || contactData.phone,
+      phone: contactData.phone,
+      status: "N'utilise pas encore WhatsApp",
+      online: false,
+      avatar: generateInitialsAvatar(contactData.name || contactData.phone).dataUrl,
+      isRegistered: false,
+      createdAt: new Date().toISOString()
+    };
+
+    contacts.push(newContact);
+    localStorage.setItem('whatsapp_contacts', JSON.stringify(contacts));
+
+    return newContact;
   } catch (error) {
-    console.error('Erreur lors de la recherche des contacts:', error);
-    return [];
+    console.error('Erreur lors de l\'ajout du contact non inscrit:', error);
+    throw error;
   }
 }
 
@@ -233,10 +304,17 @@ async function createNewChat(contact) {
       throw new Error('Aucun utilisateur connecté');
     }
 
-    loadChats();
-    
     // Vérifier si le chat existe déjà
-    const existingChat = chats.find(c => String(c.contactId) === String(contact.id));
+    const allChats = await getAllChats();
+    const existingChat = allChats.find(c => {
+      // Pour les chats individuels, vérifier les participants
+      if (!c.isGroup && !c.isCommunity && c.participants) {
+        return c.participants.includes(currentUser.id) && c.participants.includes(contact.id);
+      }
+      // Ancienne méthode pour compatibilité
+      return String(c.contactId) === String(contact.id);
+    });
+    
     if (existingChat) {
       return existingChat;
     }
@@ -254,6 +332,7 @@ async function createNewChat(contact) {
       status: contact.status || "Hey! J'utilise WhatsApp",
       messages: [],
       isGroup: false,
+      isCommunity: false,
       participants: [currentUser.id, contact.id]
     };
 
@@ -299,14 +378,15 @@ async function createNewGroup(groupData) {
       throw new Error('Aucun utilisateur connecté');
     }
 
-    loadChats();
-    
     const newGroup = {
       ...groupData,
       id: Date.now(),
-      isGroup: true,
+      isGroup: groupData.isGroup || true,
+      isCommunity: groupData.isCommunity || false,
       messages: [],
-      lastMessage: `Groupe créé par ${currentUser.name}`,
+      lastMessage: groupData.isCommunity ? 
+        `Communauté créée par ${currentUser.name}` : 
+        `Groupe créé par ${currentUser.name}`,
       timestamp: new Date().toLocaleTimeString('fr-FR', { 
         hour: '2-digit', 
         minute: '2-digit' 
@@ -314,7 +394,7 @@ async function createNewGroup(groupData) {
       unreadCount: 0,
       online: false,
       admin: currentUser.id,
-      participants: [currentUser.id, ...groupData.participants.map(p => p.id)]
+      participants: [currentUser.id, ...groupData.participants.map(p => p.id || p)]
     };
 
     chats.push(newGroup);
@@ -477,16 +557,64 @@ async function addNewContact(contactData) {
   }
 }
 
+// Charger les contacts avec un indicateur de chargement
+async function loadContacts(onContactSelect) {
+  try {
+    const contactsList = document.getElementById('contacts-list');
+    if (contactsList) {
+      // Afficher le loading
+      contactsList.innerHTML = `
+        <div class="flex flex-col items-center justify-center p-8 text-center">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00a884] mb-4"></div>
+          <p class="text-gray-400">Chargement des utilisateurs inscrits...</p>
+        </div>
+      `;
+    }
+
+    const contacts = await getAllContacts();
+    console.log('Contacts chargés:', contacts); // Debug
+
+    if (!Array.isArray(contacts)) {
+      throw new Error('getAllContacts n\'a pas retourné un tableau');
+    }
+
+    await renderContacts(contacts, onContactSelect);
+  } catch (error) {
+    console.error('Erreur lors du chargement des contacts:', error);
+    // ... gestion de l'erreur ...
+  }
+}
+
+// Ajouter cette fonction avant les exports
+async function searchContacts(query) {
+  try {
+    if (!query.trim()) {
+      return getAllContacts();
+    }
+
+    const contacts = await getAllContacts();
+    return contacts.filter(contact => 
+      contact.name.toLowerCase().includes(query.toLowerCase()) ||
+      contact.phone.toLowerCase().includes(query.toLowerCase()) ||
+      contact.status.toLowerCase().includes(query.toLowerCase())
+    );
+  } catch (error) {
+    console.error('Erreur dans searchContacts:', error);
+    return [];
+  }
+}
+
 export {
   getAllChats,
   getChatById,
   searchChats,
   markAsRead,
   getAllContacts, 
-  searchContacts,
+  searchContacts, // Maintenant la fonction existe
   createNewChat,
   updateLastMessage,
   createNewGroup,
   getUserChats,
-  addNewContact
+  addNewContact,
+  addUnregisteredContact
 };

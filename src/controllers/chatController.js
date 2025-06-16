@@ -13,8 +13,7 @@ import { getCurrentUser } from '../utils/auth.js';
 let activeChat = null;
 
 function initChat() {
-  const chats = getAllChats();
-  renderChatList(chats, handleChatClick);
+  loadAndRenderChats();
 
   initSearch();
   initMessageInput(handleSendMessage);
@@ -26,8 +25,7 @@ function initChat() {
   
   // Écouter les événements de rafraîchissement de la liste des chats
   document.addEventListener('refresh-chat-list', async () => {
-    const updatedChats = getAllChats();
-    renderChatList(updatedChats, handleChatClick);
+    await loadAndRenderChats();
   });
 
   // Écouter l'événement de restauration de chat
@@ -36,6 +34,18 @@ function initChat() {
     console.log('Restauration du chat:', chatToRestore);
     await handleChatClick(chatToRestore);
   });
+}
+
+async function loadAndRenderChats() {
+  try {
+    const chats = await getAllChats();
+    console.log('Chats chargés:', chats);
+    renderChatList(chats, handleChatClick);
+  } catch (error) {
+    console.error('Erreur lors du chargement des chats:', error);
+    // Fallback vers une liste vide
+    renderChatList([], handleChatClick);
+  }
 }
 
 function initNewChatButton() {
@@ -79,8 +89,7 @@ async function handleNewChat(contact) {
       renderMessages([]);
 
       // Mettre à jour la liste des chats
-      const allChats = getAllChats();
-      renderChatList(allChats, handleChatClick);
+      await loadAndRenderChats();
 
       return;
     }
@@ -115,8 +124,7 @@ async function handleNewChat(contact) {
     markAsRead(chat.id);
 
     // Mettre à jour la liste des chats
-    const allChats = getAllChats();
-    renderChatList(allChats, handleChatClick);
+    await loadAndRenderChats();
 
   } catch (error) {
     console.error('Erreur handleNewChat:', error);
@@ -152,8 +160,7 @@ async function handleCreateGroup(groupData) {
     renderChatHeader(newGroup);
 
     // Mettre à jour la liste des chats pour inclure le nouveau groupe
-    const allChats = getAllChats();
-    renderChatList(allChats, handleChatClick);
+    await loadAndRenderChats();
 
   } catch (error) {
     console.error('Erreur lors de la création du groupe:', error);
@@ -203,7 +210,11 @@ async function handleChatClick(chat) {
   if (chat.unreadCount > 0) {
     markAsRead(chat.id);
     markMessagesAsDelivered(chat.id);
-    updateChatInList(getChatById(chat.id));
+    
+    // Recharger la liste des chats pour mettre à jour l'affichage
+    setTimeout(async () => {
+      await loadAndRenderChats();
+    }, 500);
   }
 
   // Mettre à jour le chat actif
@@ -238,10 +249,14 @@ function initSearch() {
   const searchInput = document.getElementById('search-input');
   
   if (searchInput) {
-    searchInput.addEventListener('input', () => {
+    searchInput.addEventListener('input', async () => {
       const query = searchInput.value.trim();
-      const filteredChats = searchChats(query);
-      renderChatList(filteredChats, handleChatClick);
+      try {
+        const filteredChats = await searchChats(query);
+        renderChatList(filteredChats, handleChatClick);
+      } catch (error) {
+        console.error('Erreur lors de la recherche:', error);
+      }
     });
   }
 }
@@ -264,7 +279,7 @@ async function handleSendMessage(text, isVoice = false, duration = null, audioBl
         id: Date.now().toString(),
         chatId: activeChat.id,
         senderId: currentUser.id,
-        recipientId: activeChat.contactId || activeChat.id,
+        recipientId: getRecipientId(activeChat),
         isVoice: true,
         duration: duration,
         audioBlob: audioBlob,
@@ -314,12 +329,11 @@ async function handleSendMessage(text, isVoice = false, duration = null, audioBl
       }, 1000);
 
       // Mettre à jour la liste des chats
-      const chats = getAllChats();
-      renderChatList(chats, handleChatClick);
+      await loadAndRenderChats();
       
     } else {
       // Message texte normal avec destinataire
-      const recipientId = activeChat.contactId || activeChat.id;
+      const recipientId = getRecipientId(activeChat);
       message = await addMessage(activeChat.id, text, true, recipientId);
       
       if (message) {
@@ -351,8 +365,7 @@ async function handleSendMessage(text, isVoice = false, duration = null, audioBl
           }, 2000);
         }, 1000);
         
-        const chats = getAllChats();
-        renderChatList(chats, handleChatClick);
+        await loadAndRenderChats();
         
         // Simuler une réponse automatique (optionnel)
         // simulateReply(activeChat.id);
@@ -361,6 +374,28 @@ async function handleSendMessage(text, isVoice = false, duration = null, audioBl
   } catch (error) {
     console.error('Error sending message:', error);
   }
+}
+
+// Fonction pour déterminer le destinataire du message
+function getRecipientId(chat) {
+  const currentUser = getCurrentUser();
+  
+  if (chat.isGroup || chat.isCommunity) {
+    // Pour les groupes et communautés, pas de destinataire spécifique
+    return null;
+  }
+  
+  // Pour les chats individuels
+  if (chat.contactId) {
+    return chat.contactId;
+  }
+  
+  // Si on a une liste de participants, trouver l'autre participant
+  if (chat.participants && chat.participants.length === 2) {
+    return chat.participants.find(id => id !== currentUser.id);
+  }
+  
+  return chat.id;
 }
 
 function simulateReply(chatId) {
@@ -393,6 +428,20 @@ function simulateReply(chatId) {
       });
     }
   }, Math.random() * 3000 + 2000); // Réponse entre 2 et 5 secondes
+}
+
+function showNotification(message, type = 'success') {
+  const notification = document.createElement('div');
+  notification.className = `fixed bottom-4 right-4 p-4 rounded-lg ${
+    type === 'success' ? 'bg-green-500' : 'bg-red-500'
+  } text-white shadow-lg z-50 notification`;
+  notification.textContent = message;
+  
+  document.body.appendChild(notification);
+  
+  setTimeout(() => {
+    notification.remove();
+  }, 3000);
 }
 
 export { 

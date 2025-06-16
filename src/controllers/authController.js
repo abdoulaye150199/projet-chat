@@ -22,7 +22,7 @@ async function register(userData) {
     firstName: userData.firstName,
     lastName: userData.lastName,
     name: `${userData.firstName} ${userData.lastName}`,
-    countryCode: 'SN',
+    countryCode: '221',
     // ...reste des données utilisateur...
   };
   
