@@ -4,9 +4,10 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"vite\" \"json-server --watch db.json\"",
-    "build": "vite build",
-    "preview": "vite preview"
+    "dev": "concurrently \"vite --host\" \"json-server --watch db.json --port 3000\"",
+    "build": "vite build --emptyOutDir",
+    "preview": "vite preview",
+    "server": "json-server --watch db.json --port 3000"
   },
   "dependencies": {
     "json-server": "^1.0.0-beta.3"

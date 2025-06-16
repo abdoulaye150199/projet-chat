@@ -11,16 +11,25 @@ export default defineConfig({
         register: './register.html'
       },
       output: {
-        assetFileNames: 'assets/[name].[hash].[ext]',
-        chunkFileNames: 'assets/[name].[hash].js',
-        entryFileNames: 'assets/[name].[hash].js'
+        manualChunks: {
+          vendor: ['./src/utils', './src/components'],
+          main: ['./src/main.js'],
+          auth: ['./src/controllers/authController.js']
+        },
+        chunkFileNames: 'assets/[name]-[hash].js',
+        entryFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash][extname]'
       }
     },
-    assetsDir: 'assets',
+    minify: 'terser',
+    sourcemap: false,
     cssCodeSplit: false
   },
   server: {
     port: 5173,
     open: true
+  },
+  optimizeDeps: {
+    exclude: ['json-server']
   }
 })
