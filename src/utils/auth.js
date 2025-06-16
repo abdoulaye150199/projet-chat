@@ -1,26 +1,23 @@
 // Configuration des URLs d'API
 const API_CONFIG = {
-    LOCAL: 'http://localhost:3000',
-    PRODUCTION: 'https://serveur2.onrender.com'
+  LOCAL: 'http://localhost:3000',
+  PRODUCTION: 'https://serveur2.onrender.com'
 };
 
 // Fonction pour détecter l'environnement et choisir l'URL appropriée
 function getApiUrl() {
-    // Si on est en développement local (localhost ou 127.0.0.1)
-    if (window.location.hostname === 'localhost' || 
-        window.location.hostname === '127.0.0.1' || 
-        window.location.hostname === '') {
-        return API_CONFIG.LOCAL;
-    }
-    // Sinon utiliser l'URL de production
-    return API_CONFIG.PRODUCTION;
+  // Si on est en développement local (localhost ou 127.0.0.1)
+  if (window.location.hostname === 'localhost' || 
+      window.location.hostname === '127.0.0.1' || 
+      window.location.hostname === '') {
+    return API_CONFIG.LOCAL;
+  }
+  // Sinon utiliser l'URL de production
+  return API_CONFIG.PRODUCTION;
 }
 
-// URL dynamique basée sur l'environnement
 const API_URL = getApiUrl();
-
-// Afficher l'URL utilisée dans la console pour debug
-console.log('🌐 API URL utilisée:', API_URL);
+console.log('🌐 API URL utilisée:', API_URL); // Pour debug
 
 // Utilitaires pour la gestion de l'authentification
 

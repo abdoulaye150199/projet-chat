@@ -24,12 +24,12 @@
       "name": "Khouss Ngom",
       "countryCode": "SN",
       "status": "Hey! J'utilise WhatsApp",
-      "online": true,
+      "online": false,
       "avatar": "https://api.dicebear.com/6.x/initials/svg?seed=Khouss Ngom",
       "registeredAt": "2025-06-15T21:57:14.938Z",
-      "lastLogin": "2025-06-15T22:05:20.493Z",
-      "lastSeen": "2025-06-15T21:57:56.362Z",
-      "isOnline": true,
+      "lastLogin": "2025-06-16T12:56:31.027Z",
+      "lastSeen": "2025-06-16T12:59:00.222Z",
+      "isOnline": false,
       "createdAt": "2025-06-15T21:57:14.938Z"
     },
     {
@@ -146,8 +146,8 @@
       "id": "1750025089666",
       "contactId": "1750024634938",
       "name": "Khouss Ngom",
-      "lastMessage": "",
-      "timestamp": "22:04:49",
+      "lastMessage": "🇧🇴🇧🇴",
+      "timestamp": "12:58",
       "unreadCount": 0,
       "avatar": "https://api.dicebear.com/6.x/initials/svg?seed=Khouss Ngom",
       "online": false,
@@ -239,7 +239,7 @@
       "messages": []
     },
     {
-      "id": 1750076591567,
+      "id": "1750076591567",
       "contactId": "1750076588317",
       "name": "Fallou",
       "lastMessage": "",
@@ -296,6 +296,19 @@
       "delivered": true,
       "read": false,
       "createdAt": "2025-06-16T10:35:35.041Z"
+    },
+    {
+      "id": "1750078734751",
+      "chatId": "1750025089666",
+      "senderId": "1750024634938",
+      "recipientId": "1750024634938",
+      "text": "🇧🇴🇧🇴",
+      "timestamp": "12:58",
+      "isMe": true,
+      "sent": true,
+      "delivered": true,
+      "read": false,
+      "createdAt": "2025-06-16T12:58:54.761Z"
     }
   ],
   "notifications": [
@@ -331,6 +344,17 @@
       "content": "mari",
       "timestamp": "2025-06-16T10:35:35.061Z",
       "read": false
+    },
+    {
+      "id": "1750078734785",
+      "type": "message",
+      "senderId": "1750024634938",
+      "recipientId": "1750024634938",
+      "messageId": "1750078734751",
+      "chatId": "1750025089666",
+      "content": "🇧🇴🇧🇴",
+      "timestamp": "2025-06-16T12:58:54.785Z",
+      "read": true
     }
   ]
 }
