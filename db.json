@@ -11,8 +11,8 @@
       "online": true,
       "avatar": "https://api.dicebear.com/6.x/initials/svg?seed=Utilisateur Test",
       "registeredAt": "2024-01-01T00:00:00.000Z",
-      "lastLogin": "2025-06-17T22:34:39.511Z",
-      "lastSeen": "2025-06-17T22:33:30.713Z",
+      "lastLogin": "2025-06-17T23:05:11.930Z",
+      "lastSeen": "2025-06-17T22:57:49.974Z",
       "isOnline": true,
       "createdAt": "2024-01-01T00:00:00.000Z"
     },
@@ -31,6 +31,22 @@
       "lastSeen": "2025-06-17T22:34:58.638Z",
       "isOnline": true,
       "createdAt": "2025-06-17T22:34:58.638Z"
+    },
+    {
+      "id": "1750202096463",
+      "phone": "+SN787278278",
+      "firstName": "Laye",
+      "lastName": "Diallo",
+      "name": "Laye Diallo",
+      "countryCode": "SN",
+      "status": "Hey! J'utilise WhatsApp",
+      "online": true,
+      "avatar": "https://api.dicebear.com/6.x/initials/svg?seed=Laye Diallo",
+      "registeredAt": "2025-06-17T23:14:56.463Z",
+      "lastLogin": "2025-06-17T23:14:56.463Z",
+      "lastSeen": "2025-06-17T23:14:56.463Z",
+      "isOnline": true,
+      "createdAt": "2025-06-17T23:14:56.463Z"
     }
   ],
   "chats": [
@@ -87,6 +103,24 @@
         "1750199698638",
         "1"
       ]
+    },
+    {
+      "id": 1750202102871,
+      "contactId": "1",
+      "name": "Utilisateur Test",
+      "lastMessage": "",
+      "timestamp": "23:15:02",
+      "unreadCount": 0,
+      "avatar": "https://api.dicebear.com/6.x/initials/svg?seed=Utilisateur Test",
+      "online": true,
+      "status": "Hey! J'utilise WhatsApp",
+      "messages": [],
+      "isGroup": false,
+      "isCommunity": false,
+      "participants": [
+        "1750202096463",
+        "1"
+      ]
     }
   ],
   "messages": [
@@ -141,6 +175,32 @@
       "delivered": true,
       "read": false,
       "createdAt": "2025-06-17T22:35:32.283Z"
+    },
+    {
+      "id": "1750202110892",
+      "chatId": 1750202102871,
+      "senderId": "1750202096463",
+      "recipientId": "1",
+      "text": "bonjour user",
+      "timestamp": "23:15",
+      "isMe": true,
+      "sent": true,
+      "delivered": true,
+      "read": false,
+      "createdAt": "2025-06-17T23:15:10.894Z"
+    },
+    {
+      "id": "1750202138807",
+      "chatId": 1750202102871,
+      "senderId": "1",
+      "recipientId": "1",
+      "text": "salut",
+      "timestamp": "23:15",
+      "isMe": true,
+      "sent": true,
+      "delivered": true,
+      "read": false,
+      "createdAt": "2025-06-17T23:15:38.826Z"
     }
   ],
   "statuses": [
@@ -259,6 +319,52 @@
       "chatId": 1750199705950,
       "content": "oui salut doyen",
       "timestamp": "2025-06-17T22:35:32.323Z",
+      "read": false,
+      "priority": "high"
+    },
+    {
+      "id": "1750202110921",
+      "type": "message",
+      "senderId": "1750202096463",
+      "recipientId": "1",
+      "messageId": "1750202110892",
+      "chatId": 1750202102871,
+      "content": "bonjour user",
+      "timestamp": "2025-06-17T23:15:10.921Z",
+      "read": false
+    },
+    {
+      "id": "1750202110942",
+      "type": "message_from_user",
+      "senderId": "1750202096463",
+      "recipientId": "1",
+      "messageId": "1750202110892",
+      "chatId": 1750202102871,
+      "content": "bonjour user",
+      "timestamp": "2025-06-17T23:15:10.942Z",
+      "read": false,
+      "priority": "high"
+    },
+    {
+      "id": "1750202138842",
+      "type": "message",
+      "senderId": "1",
+      "recipientId": "1",
+      "messageId": "1750202138807",
+      "chatId": 1750202102871,
+      "content": "salut",
+      "timestamp": "2025-06-17T23:15:38.842Z",
+      "read": false
+    },
+    {
+      "id": "1750202138862",
+      "type": "message_from_user",
+      "senderId": "1",
+      "recipientId": "1",
+      "messageId": "1750202138807",
+      "chatId": 1750202102871,
+      "content": "salut",
+      "timestamp": "2025-06-17T23:15:38.862Z",
       "read": false,
       "priority": "high"
     }

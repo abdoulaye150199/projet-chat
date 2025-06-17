@@ -45,7 +45,6 @@
   </head>
   <body class="bg-gradient-to-br from-[#111b21] via-[#0f1419] to-[#1a252b] text-gray-200 overflow-hidden">
     <div id="app" class="h-screen flex shadow-2xl">
-      <!-- Side Navigation avec effets améliorés -->
       <div id="side-nav" class="w-[70px] bg-gradient-to-b from-[#202c33] via-[#1e2a31] to-[#1a252b] flex flex-col items-center py-4 border-r border-gray-600 shadow-xl backdrop-blur-sm">
         <div class="relative mb-8 animate-fade-in">
           <button id="chats-btn" class="w-12 h-12 bg-gradient-to-r from-[#00a884] to-[#00916a] rounded-full flex items-center justify-center text-white hover:from-[#00916a] hover:to-[#007a5a] transition-all duration-300 transform hover:scale-110 hover:rotate-3 shadow-lg hover:shadow-xl animate-glow">
@@ -55,7 +54,6 @@
             37
           </div>
         </div>
-
         <div class="relative mb-8 animate-fade-in" style="animation-delay: 0.1s">
           <button id="status-btn" class="w-12 h-12 rounded-full bg-gradient-to-br from-[#2a3942] to-[#374045] flex items-center justify-center text-gray-400 hover:text-white hover:from-[#374045] hover:to-[#404a52] transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg">
             <div class="w-6 h-6"></div>
@@ -94,8 +92,6 @@
           />
         </div>
       </div>
-
-      <!-- Chat List Container avec glassmorphism -->
       <div id="chat-list-container" class="w-[380px] border-r border-gray-600 flex flex-col backdrop-blur-sm bg-gradient-to-b from-[#111b21]/90 to-[#0f1419]/90 shadow-xl">
         <div id="chat-list-header" class="p-2 bg-gradient-to-r from-[#202c33]/80 to-[#1e2a31]/80 flex justify-between items-center backdrop-blur-md border-b border-gray-600/50 shadow-sm">
           <h1 class="text-xl font-medium px-4 py-3 text-white drop-shadow-sm">Discussions</h1>
@@ -108,7 +104,6 @@
             </button>
           </div>
         </div>
-        
         <div id="search-container" class="p-2 bg-gradient-to-r from-[#111b21] to-[#0f1419]">
           <div class="flex items-center bg-gradient-to-r from-[#202c33] to-[#1e2a31] rounded-xl px-3 py-1 shadow-inner border border-gray-600/30 hover:border-[#00a884]/30 transition-all duration-300">
             <span class="text-gray-400 mr-3">
@@ -125,8 +120,6 @@
         
         <div id="chat-list" class="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-[#00a884]/50 scrollbar-track-transparent hover:scrollbar-thumb-[#00a884]/80"></div>
       </div>
-
-      <!-- Chat Content avec effets dynamiques -->
       <div id="chat-content" class="flex-1 flex flex-col bg-gradient-to-br from-[#0b141a] to-[#111b21] min-w-0">
         <div id="chat-header" class="p-2 bg-gradient-to-r from-[#202c33]/90 to-[#1e2a31]/90 flex justify-between items-center hidden backdrop-blur-md border-b border-gray-600/50 shadow-lg">
           <div class="flex items-center gap-3 px-4">
@@ -145,40 +138,27 @@
             </button>
           </div>
         </div>
-
-        <!-- Messages Container - Version corrigée -->
         <div id="messages-container" 
              class="flex-1 overflow-y-auto p-5 bg-transparent hidden scrollbar-thin scrollbar-thumb-[#00a884]/30 scrollbar-track-transparent">
           <div id="messages-list" class="max-w-3xl mx-auto"></div>
         </div>
-
-        <!-- Welcome Screen -->
         <div id="welcome-screen" class="flex-1 flex flex-col items-center justify-center bg-gradient-to-br from-[#222e35] via-[#1e2a31] to-[#1a252b] relative overflow-hidden">
-          <!-- Effets de fond subtils -->
           <div class="absolute inset-0 opacity-3">
             <div class="absolute bottom-20 right-20 w-24 h-24 bg-[#00916a] rounded-full blur-2xl animate-pulse"></div>
           </div>
-
-          <!-- Logo WhatsApp -->
           <div class="w-80 h-80 rounded-full bg-gradient-to-br from-[#3b4a54] via-[#2d3940] to-[#1f2d35] flex items-center justify-center mb-10 shadow-2xl">
             <div class="w-64 h-64 rounded-full bg-gradient-to-br from-[#475e6b] to-[#3b4a54] flex items-center justify-center shadow-inner">
               <img src="./src/assets/images/whatsapp-logo.png" alt="WhatsApp" class="w-40 h-40 object-contain opacity-20">
             </div>
           </div>
-
-          <!-- Titre -->
           <h1 class="text-4xl text-white font-light mb-8 animate-fade-in text-center">
             WhatsApp pour Windows
           </h1>
-
-          <!-- Description -->
           <p class="text-[#8696a0] text-center max-w-lg text-base leading-relaxed mb-12 animate-fade-in opacity-90 px-8">
             Envoyez et recevez des messages sans avoir à garder votre téléphone connecté.
             <br><br>
             Utilisez WhatsApp sur un maximum de 4 appareils et 1 téléphone, simultanément.
           </p>
-
-          <!-- Indicateur de chiffrement -->
           <div class="flex items-center gap-3 text-[#8696a0] bg-[#182229] px-5 py-3 rounded-lg shadow-lg">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-4 h-4 text-[#8696a0]">
               <path fill="currentColor" d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12c5.16-1.26 9-6.45 9-12V5l-9-4zm0 2.18l7 3.12v4.7c0 4.54-2.77 8.62-7 10.46c-4.23-1.84-7-5.92-7-10.46v-4.7l7-3.12z"/>
@@ -186,8 +166,6 @@
             <span class="text-sm">Chiffrée de bout en bout</span>
           </div>
         </div>
-
-        <!-- Message Input avec effets -->
         <div id="message-input-container" class="p-3 bg-gradient-to-r from-[#202c33]/90 to-[#1e2a31]/90 flex items-center gap-4 hidden backdrop-blur-md border-t border-gray-600/50 shadow-lg">
           <button id="emoji-btn" class="text-gray-400 hover:text-white p-2 rounded-full hover:bg-white/10 transition-all duration-200 transform hover:scale-110">
             <div class="w-6 h-6"></div>

@@ -60,3 +60,89 @@
   justify-content: center;
   background-color: #222e35;
 }
+
+/* Animations pour les notifications en temps réel */
+@keyframes slide-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-out {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+.animate-slide-in {
+  animation: slide-in 0.3s ease-out;
+}
+
+.animate-slide-out {
+  animation: slide-out 0.3s ease-in;
+}
+
+/* Style pour les notifications de nouveaux messages */
+.message-notification {
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.message-notification:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 168, 132, 0.3);
+}
+
+/* Indicateur de messages en temps réel */
+.real-time-indicator {
+  position: relative;
+}
+
+.real-time-indicator::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 8px;
+  height: 8px;
+  background: #00a884;
+  border-radius: 50%;
+  animation: pulse-dot 2s infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.2);
+  }
+}
+
+/* Style pour les messages reçus en temps réel */
+.new-message-highlight {
+  animation: highlight-new 1s ease-out;
+}
+
+@keyframes highlight-new {
+  0% {
+    background-color: rgba(0, 168, 132, 0.2);
+    transform: translateX(-10px);
+  }
+  100% {
+    background-color: transparent;
+    transform: translateX(0);
+  }
+}

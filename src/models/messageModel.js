@@ -23,6 +23,9 @@ const API_URL = getApiUrl();
 
 // Initialiser un objet vide pour les messages
 let messages = {};
+let lastPollingTimestamp = null;
+let pollingInterval = null;
+let _isPollingActive = false;
 
 // Charger les messages depuis le localStorage
 function loadMessages() {
@@ -239,75 +242,117 @@ async function markNotificationAsRead(notificationId) {
   }
 }
 
-// Fonction pour synchroniser les messages reçus - LOGIQUE CORRIGÉE
-async function syncReceivedMessages() {
+// NOUVELLE FONCTION: Polling en temps réel pour les nouveaux messages
+async function pollForNewMessages() {
+  if (!_isPollingActive) return;
+  
   try {
     const currentUser = getCurrentUser();
     if (!currentUser || !currentUser.id) return;
 
-    const notifications = await getNotificationsForUser(currentUser.id);
-    
-    for (const notification of notifications) {
-      if (notification.type === 'message' || notification.type === 'message_from_user') {
-        // Récupérer le message complet
-        const messageResponse = await fetch(`${API_URL}/messages/${notification.messageId}`);
-        if (messageResponse.ok) {
-          const message = await messageResponse.json();
-          
-          // CORRECTION: Créer le message reçu avec la bonne logique
-          const receivedMessage = {
-            ...message,
-            isMe: false, // TOUJOURS false pour les messages reçus
-            delivered: true,
-            read: false
-          };
-          
-          loadMessages();
-          if (!messages[message.chatId]) {
-            messages[message.chatId] = [];
-          }
-          
-          // Vérifier si le message n'existe pas déjà
-          const exists = messages[message.chatId].some(m => m.id === message.id);
-          if (!exists) {
-            messages[message.chatId].push(receivedMessage);
-            saveMessages();
-            
-            // Mettre à jour le chat avec le nouveau message
-            await updateLastMessage(message.chatId, message.text);
-            
-            // Créer le chat s'il n'existe pas
-            await ensureChatExists(message.chatId, message.senderId);
-            
-            // Si le chat est actuellement actif, ajouter le message à l'interface
-            if (window.activeChat && window.activeChat.id == message.chatId) {
-              // Importer dynamiquement la fonction pour éviter les dépendances circulaires
-              const { addMessageToChat } = await import('../views/chatView.js');
-              addMessageToChat(receivedMessage);
-            }
+    console.log('🔄 Polling pour nouveaux messages...');
 
-            // Émettre un événement pour rafraîchir la liste des chats
-            const event = new CustomEvent('refresh-chat-list');
-            document.dispatchEvent(event);
-            
-            // Afficher une notification si c'est un message d'un utilisateur inscrit
-            if (notification.type === 'message_from_user') {
-              await showInAppNotification(message, notification);
-            }
-          }
-        }
-        
-        // Marquer la notification comme lue
-        await markNotificationAsRead(notification.id);
-      }
+    // Récupérer tous les messages depuis le dernier polling
+    const response = await fetch(`${API_URL}/messages`);
+    if (!response.ok) {
+      console.warn('Erreur lors du polling des messages');
+      return;
     }
+
+    const allMessages = await response.json();
+    
+    // Filtrer les nouveaux messages depuis le dernier polling
+    const newMessages = allMessages.filter(msg => {
+      const messageTime = new Date(msg.createdAt).getTime();
+      const lastPollingTime = lastPollingTimestamp ? new Date(lastPollingTimestamp).getTime() : 0;
+      
+      // Messages reçus par l'utilisateur actuel et créés après le dernier polling
+      return msg.recipientId == currentUser.id && 
+             messageTime > lastPollingTime &&
+             msg.senderId != currentUser.id; // Exclure mes propres messages
+    });
+
+    if (newMessages.length > 0) {
+      console.log(`📨 ${newMessages.length} nouveaux messages détectés:`, newMessages);
+      
+      // Traiter chaque nouveau message
+      for (const message of newMessages) {
+        await processNewMessage(message);
+      }
+      
+      // Mettre à jour le timestamp du dernier polling
+      lastPollingTimestamp = new Date().toISOString();
+      
+      // Émettre un événement pour rafraîchir la liste des chats
+      const event = new CustomEvent('refresh-chat-list');
+      document.dispatchEvent(event);
+    }
+
+    // Mettre à jour le timestamp même s'il n'y a pas de nouveaux messages
+    if (!lastPollingTimestamp) {
+      lastPollingTimestamp = new Date().toISOString();
+    }
+
   } catch (error) {
-    console.error('Erreur syncReceivedMessages:', error);
+    console.error('❌ Erreur lors du polling des messages:', error);
   }
 }
 
-// Fonction pour afficher une notification dans l'app
-async function showInAppNotification(message, notification) {
+// NOUVELLE FONCTION: Traiter un nouveau message reçu
+async function processNewMessage(message) {
+  try {
+    const currentUser = getCurrentUser();
+    
+    // Créer le message reçu avec la bonne logique
+    const receivedMessage = {
+      ...message,
+      isMe: false, // TOUJOURS false pour les messages reçus
+      delivered: true,
+      read: false
+    };
+    
+    // Ajouter le message au localStorage
+    loadMessages();
+    if (!messages[message.chatId]) {
+      messages[message.chatId] = [];
+    }
+    
+    // Vérifier si le message n'existe pas déjà
+    const exists = messages[message.chatId].some(m => m.id === message.id);
+    if (!exists) {
+      messages[message.chatId].push(receivedMessage);
+      saveMessages();
+      
+      console.log(`💬 Nouveau message ajouté au chat ${message.chatId}:`, receivedMessage);
+      
+      // Mettre à jour le chat avec le nouveau message
+      await updateLastMessage(message.chatId, message.text);
+      
+      // Créer le chat s'il n'existe pas
+      await ensureChatExists(message.chatId, message.senderId);
+      
+      // Si le chat est actuellement actif, ajouter le message à l'interface
+      if (window.activeChat && window.activeChat.id == message.chatId) {
+        console.log('📱 Ajout du message à l\'interface du chat actif');
+        
+        // Importer dynamiquement la fonction pour éviter les dépendances circulaires
+        const { addMessageToChat } = await import('../views/chatView.js');
+        addMessageToChat(receivedMessage);
+        
+        // Jouer un son de notification (optionnel)
+        playNotificationSound();
+      } else {
+        // Afficher une notification si le chat n'est pas actif
+        await showInAppNotification(message);
+      }
+    }
+  } catch (error) {
+    console.error('Erreur lors du traitement du nouveau message:', error);
+  }
+}
+
+// NOUVELLE FONCTION: Afficher une notification dans l'app
+async function showInAppNotification(message) {
   try {
     // Récupérer les informations de l'expéditeur
     const senderResponse = await fetch(`${API_URL}/users/${message.senderId}`);
@@ -316,7 +361,7 @@ async function showInAppNotification(message, notification) {
       
       // Créer une notification visuelle
       const notificationElement = document.createElement('div');
-      notificationElement.className = 'fixed top-4 right-4 bg-[#00a884] text-white p-4 rounded-lg shadow-lg z-50 max-w-sm';
+      notificationElement.className = 'fixed top-4 right-4 bg-[#00a884] text-white p-4 rounded-lg shadow-lg z-50 max-w-sm animate-slide-in';
       notificationElement.innerHTML = `
         <div class="flex items-center">
           <img src="${sender.avatar || `https://api.dicebear.com/6.x/initials/svg?seed=${sender.name}`}" 
@@ -326,6 +371,11 @@ async function showInAppNotification(message, notification) {
             <div class="font-medium">${sender.name}</div>
             <div class="text-sm opacity-90">${message.text}</div>
           </div>
+          <button class="ml-2 text-white hover:text-gray-200" onclick="this.parentElement.parentElement.remove()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+          </button>
         </div>
       `;
       
@@ -350,6 +400,30 @@ async function showInAppNotification(message, notification) {
     }
   } catch (error) {
     console.error('Erreur lors de l\'affichage de la notification:', error);
+  }
+}
+
+// NOUVELLE FONCTION: Jouer un son de notification
+function playNotificationSound() {
+  try {
+    // Créer un son de notification simple
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+    oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.1);
+    
+    gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.2);
+  } catch (error) {
+    console.warn('Impossible de jouer le son de notification:', error);
   }
 }
 
@@ -394,10 +468,7 @@ async function getMessages(chatId) {
       return [];
     }
 
-    // D'abord synchroniser les messages reçus
-    await syncReceivedMessages();
-    
-    // Puis récupérer les messages locaux
+    // Récupérer les messages locaux
     loadMessages();
     const localMessages = messages[chatId] || [];
     
@@ -535,13 +606,53 @@ async function markMessagesAsDelivered(chatId) {
   }
 }
 
-// Fonction pour démarrer la synchronisation périodique
-export function startMessageSync() {
-  // Synchroniser immédiatement
-  syncReceivedMessages();
+// NOUVELLE FONCTION: Démarrer le polling en temps réel
+export function startRealTimePolling() {
+  if (_isPollingActive) {
+    console.log('⚠️ Polling déjà actif');
+    return;
+  }
   
-  // Puis synchroniser toutes les 5 secondes
-  setInterval(syncReceivedMessages, 5000);
+  console.log('🚀 Démarrage du polling en temps réel...');
+  _isPollingActive = true;
+  lastPollingTimestamp = new Date().toISOString();
+  
+  // Démarrer le polling immédiatement
+  pollForNewMessages();
+  
+  // Puis continuer toutes les 3 secondes
+  pollingInterval = setInterval(pollForNewMessages, 3000);
+  
+  console.log('✅ Polling en temps réel démarré (intervalle: 3s)');
+}
+
+// NOUVELLE FONCTION: Arrêter le polling en temps réel
+export function stopRealTimePolling() {
+  if (!_isPollingActive) {
+    console.log('⚠️ Polling déjà arrêté');
+    return;
+  }
+  
+  console.log('🛑 Arrêt du polling en temps réel...');
+  _isPollingActive = false;
+  
+  if (pollingInterval) {
+    clearInterval(pollingInterval);
+    pollingInterval = null;
+  }
+  
+  console.log('✅ Polling en temps réel arrêté');
+}
+
+// Renommer la fonction pour éviter le conflit
+export function getPollingStatus() {
+  return _isPollingActive;
+}
+
+// Fonction pour démarrer la synchronisation périodique (ancienne fonction conservée pour compatibilité)
+export function startMessageSync() {
+  // Utiliser la nouvelle fonction de polling en temps réel
+  startRealTimePolling();
 }
 
 export {
@@ -552,7 +663,6 @@ export {
   getMessages,
   markMessagesAsDelivered,
   markMessagesAsRead,
-  syncReceivedMessages,
   getMessagesForUser,
   getNotificationsForUser
 };

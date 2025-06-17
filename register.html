@@ -7,115 +7,285 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="./src/styles/login.css">
     <link rel="stylesheet" href="./src/styles/validation.css">
+    <style>
+        body, html {
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .gradient-bg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, #00E676 0%, #008069 50%, #004d40 100%);
+            opacity: 0.9;
+        }
+        
+        .floating-shapes {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        
+        .shape {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .shape:nth-child(1) {
+            width: 80px;
+            height: 80px;
+            top: 20%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+        
+        .shape:nth-child(2) {
+            width: 120px;
+            height: 120px;
+            top: 60%;
+            right: 10%;
+            animation-delay: 2s;
+        }
+        
+        .shape:nth-child(3) {
+            width: 60px;
+            height: 60px;
+            bottom: 20%;
+            left: 20%;
+            animation-delay: 4s;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-20px) rotate(120deg); }
+            66% { transform: translateY(-10px) rotate(240deg); }
+        }
+        
+        .input-modern {
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .input-modern:focus {
+            background: rgba(255, 255, 255, 1);
+            border-color: #00E676;
+            box-shadow: 0 0 0 4px rgba(0, 230, 118, 0.1);
+        }
+        
+        .btn-modern {
+            background: linear-gradient(135deg, #00E676 0%, #008069 100%);
+            border: none;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-modern::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .btn-modern:hover::before {
+            left: 100%;
+        }
+        
+        .btn-modern:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 230, 118, 0.3);
+        }
+        
+        .card-modern {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.1);
+        }
+        
+        .logo-pulse {
+            animation: pulse-glow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes pulse-glow {
+            from {
+                box-shadow: 0 0 20px rgba(0, 230, 118, 0.5);
+            }
+            to {
+                box-shadow: 0 0 30px rgba(0, 230, 118, 0.8), 0 0 40px rgba(0, 230, 118, 0.3);
+            }
+        }
+        
+        .text-shadow {
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .form-grid {
+            display: grid;
+            gap: 1rem;
+        }
+    </style>
 </head>
-<body class="bg-white text-[#41525d]">
-    <div class="min-h-screen flex flex-col">
-        <!-- Header -->
-        <nav class="py-4 px-6">
-            <div class="flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" width="39" height="39" viewBox="0 0 39 39">
-                    <path fill="#00E676" d="M10.7 32.8l.6.3c2.5 1.5 5.3 2.2 8.1 2.2 8.8 0 16-7.2 16-16 0-4.2-1.7-8.3-4.7-11.3s-7-4.7-11.3-4.7c-8.8 0-16 7.2-16 15.9 0 2.8.7 5.6 2.2 8.1l.3.6-1.3 4.8 4.8-1.3zm0 0"/>
-                </svg>
-                <span class="text-[#41525d] text-xl">WhatsApp Web</span>
-            </div>
-        </nav>
-
-        <!-- Main Content -->
-        <main class="flex-1 flex items-center justify-center p-4">
-            <div class="max-w-md w-full bg-white rounded-3xl shadow-lg p-12">
-                <h1 class="text-[32px] text-[#41525d] font-normal text-center leading-tight mb-4">
-                    Créer un compte
-                </h1>
-                <p class="text-[#8696a0] text-center text-[16px] mb-8">
-                    Remplissez vos informations pour créer votre compte WhatsApp.
-                </p>
-
-                <form id="registerForm" class="space-y-6">
-                    <!-- Prénom -->
-                    <div>
-                        <input
-                            type="text"
-                            id="firstName"
-                            placeholder="Prénom"
-                            required
-                            class="w-full p-4 pl-6 border rounded-[25px] text-[#41525d] bg-white border-[#e1e9eb] focus:border-[#008069] focus:outline-none"
-                        >
-                        <div id="firstName-error" class="text-red-500 text-sm mt-2 ml-4"></div>
+<body class="bg-green-50 h-screen">
+    <div class="floating-shapes">
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+    </div>
+    
+    <div class="relative z-10 h-full flex items-center justify-center p-4">
+        <div class="w-full max-w-lg">
+            <!-- Main Card -->
+            <div class="card-modern rounded-3xl p-6">
+                <!-- Logo Section -->
+                <div class="text-center mb-6">
+                    <div class="logo-pulse w-16 h-16 bg-gradient-to-br from-[#00E676] to-[#008069] rounded-full mx-auto mb-4 flex items-center justify-center">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+                        </svg>
                     </div>
+                    <h1 class="text-2xl font-bold text-[#2c3e50] mb-2 text-shadow">
+                        Créer un compte
+                    </h1>
+                    <p class="text-gray-600 text-sm">
+                        Rejoignez WhatsApp Web
+                    </p>
+                </div>
 
-                    <!-- Nom -->
-                    <div>
-                        <input
-                            type="text"
-                            id="lastName"
-                            placeholder="Nom"
-                            required
-                            class="w-full p-4 pl-6 border rounded-[25px] text-[#41525d] bg-white border-[#e1e9eb] focus:border-[#008069] focus:outline-none"
-                        >
-                        <div id="lastName-error" class="text-red-500 text-sm mt-2 ml-4"></div>
-                    </div>
+                <!-- Form -->
+                <form id="registerForm" class="form-grid">
+                    <!-- Name Fields -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <!-- First Name -->
+                        <div>
+                            <label class="block text-sm font-semibold text-[#2c3e50] mb-1">Prénom</label>
+                            <input
+                                type="text"
+                                id="firstName"
+                                placeholder="Prénom"
+                                required
+                                class="input-modern w-full px-3 py-2.5 rounded-xl text-[#2c3e50] focus:outline-none placeholder-gray-400 text-sm"
+                            >
+                            <div id="firstName-error" class="text-red-500 text-xs mt-1"></div>
+                        </div>
 
-                    <!-- Sélecteur de pays -->
-                    <div class="relative">
-                        <select id="country" class="w-full p-4 pl-6 border rounded-[25px] appearance-none text-[#41525d] bg-white border-[#e1e9eb] focus:border-[#008069] focus:outline-none">
-                            <!-- Countries will be populated by JavaScript -->
-                        </select>
-                        <div class="absolute right-6 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                            <svg class="w-5 h-5 text-[#8696a0]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                            </svg>
+                        <!-- Last Name -->
+                        <div>
+                            <label class="block text-sm font-semibold text-[#2c3e50] mb-1">Nom</label>
+                            <input
+                                type="text"
+                                id="lastName"
+                                placeholder="Nom"
+                                required
+                                class="input-modern w-full px-3 py-2.5 rounded-xl text-[#2c3e50] focus:outline-none placeholder-gray-400 text-sm"
+                            >
+                            <div id="lastName-error" class="text-red-500 text-xs mt-1"></div>
                         </div>
                     </div>
 
-                    <!-- Input numéro -->
+                    <!-- Country Selector -->
                     <div>
-                        <input
-                            type="tel"
-                            id="phone"
-                            required
-                            class="w-full p-4 pl-6 border rounded-[25px] text-[#41525d] bg-white border-[#e1e9eb] focus:border-[#008069] focus:outline-none"
-                        >
-                        <div id="phone-error" class="text-red-500 text-sm mt-2 ml-4"></div>
+                        <label class="block text-sm font-semibold text-[#2c3e50] mb-1">Pays</label>
+                        <div class="relative">
+                            <select id="country" class="input-modern w-full px-3 py-2.5 rounded-xl appearance-none text-[#2c3e50] focus:outline-none text-sm">
+                                <!-- Countries will be populated by JavaScript -->
+                            </select>
+                            <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+                                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                </svg>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Bouton d'inscription -->
-                    <div class="flex justify-center mt-8">
-                        <button
-                            type="submit"
-                            id="submit-btn"
-                            class="bg-[#008069] text-white rounded-[24px] py-3 px-8 font-medium hover:bg-[#017561] transition-colors"
-                        >
-                            S'inscrire
-                        </button>
+                    <!-- Phone Input -->
+                    <div>
+                        <label class="block text-sm font-semibold text-[#2c3e50] mb-1">Téléphone</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                                </svg>
+                            </div>
+                            <input
+                                type="tel"
+                                id="phone"
+                                placeholder="Votre numéro"
+                                required
+                                class="input-modern w-full pl-10 pr-3 py-2.5 rounded-xl text-[#2c3e50] focus:outline-none placeholder-gray-400 text-sm"
+                            >
+                        </div>
+                        <div id="phone-error" class="text-red-500 text-xs mt-1"></div>
                     </div>
+
+                    <!-- Submit Button -->
+                    <button
+                        type="submit"
+                        id="submit-btn"
+                        class="btn-modern w-full py-3 px-6 rounded-xl text-white font-semibold text-base mt-4"
+                    >
+                        Créer mon compte
+                    </button>
                 </form>
 
-                <!-- Lien vers la connexion -->
-                <div class="text-center mt-6">
-                    <p class="text-[#8696a0]">
+                <!-- Divider -->
+                <div class="flex items-center my-5">
+                    <div class="flex-1 h-px bg-gray-300"></div>
+                    <span class="px-3 text-xs text-gray-500">ou</span>
+                    <div class="flex-1 h-px bg-gray-300"></div>
+                </div>
+
+                <!-- Login Link -->
+                <div class="text-center">
+                    <p class="text-gray-600 text-xs">
                         Déjà un compte ? 
-                        <a href="login.html" class="text-[#008069] hover:underline">Se connecter</a>
+                        <a href="login.html" class="text-[#008069] font-semibold hover:text-[#00695c] transition-colors">
+                            Se connecter
+                        </a>
                     </p>
                 </div>
             </div>
-        </main>
 
-        <!-- Footer -->
-        <footer class="py-6 text-center">
-            <div class="flex items-center justify-center gap-2 text-[#8696a0]">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2s8 6 8 14c0 4.4-3.6 8-8 8s-8-3.6-8-8c0-8 8-14 8-14z"/>
-                </svg>
-                <span>Vos messages personnels sont chiffrés de bout en bout</span>
+            <!-- Security Notice -->
+            <div class="mt-4 text-center">
+                <div class="glass-effect inline-flex items-center gap-2 text-white px-4 py-2 rounded-full text-xs">
+                    <div class="w-2 h-2 bg-[#00E676] rounded-full animate-pulse"></div>
+                    <span>Messages chiffrés de bout en bout</span>
+                </div>
             </div>
-        </footer>
+        </div>
     </div>
 
     <!-- Loading Overlay -->
-    <div id="loadingOverlay" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-8 text-center">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto mb-4"></div>
-            <p class="text-gray-600">Création du compte...</p>
+    <div id="loadingOverlay" class="fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50 backdrop-blur-sm" style="display: none;">
+        <div class="text-center">
+            <div class="w-16 h-16 border-4 border-gray-300 border-t-[#00E676] rounded-full animate-spin mx-auto mb-4"></div>
+            <h3 class="text-white font-semibold text-lg mb-2">Création du compte</h3>
+            <p class="text-gray-300 text-sm">Patientez...</p>
         </div>
     </div>
 

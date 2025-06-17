@@ -1,5 +1,5 @@
 import { getAllChats, getChatById, searchChats, markAsRead, createNewChat, createNewGroup } from '../models/chatModel.js';
-import { addMessage, getMessages, getMessagesByChatId, markMessagesAsDelivered, startMessageSync } from '../models/messageModel.js';
+import { addMessage, getMessages, getMessagesByChatId, markMessagesAsDelivered, startRealTimePolling, stopRealTimePolling } from '../models/messageModel.js';
 import { renderChatList, updateChatInList } from '../views/chatListView.js';
 import { 
   renderChatHeader, 
@@ -11,8 +11,6 @@ import { renderNewDiscussionView, hideNewDiscussionView } from '../views/newDisc
 import { getCurrentUser } from '../utils/auth.js';
 
 let activeChat = null;
-let messagePollingInterval = null;
-let lastMessageTimestamp = null;
 
 function initChat() {
   loadAndRenderChats();
@@ -22,8 +20,9 @@ function initChat() {
   
   initNewChatButton();
   
-  // Démarrer la synchronisation des messages
-  startMessageSync();
+  // Démarrer le polling en temps réel pour les nouveaux messages
+  startRealTimePolling();
+  console.log('🚀 Système de messages en temps réel activé');
   
   // Écouter les événements de rafraîchissement de la liste des chats
   document.addEventListener('refresh-chat-list', async () => {
@@ -37,9 +36,41 @@ function initChat() {
     await handleChatClick(chatToRestore);
   });
 
+  // Écouter l'événement d'ouverture de chat depuis une notification
+  document.addEventListener('open-chat', async (event) => {
+    const { chatId, senderId } = event.detail;
+    console.log('📱 Ouverture du chat depuis notification:', { chatId, senderId });
+    
+    try {
+      // Récupérer le chat
+      const chat = await getChatById(chatId);
+      if (chat) {
+        await handleChatClick(chat);
+      } else {
+        console.warn('Chat non trouvé:', chatId);
+      }
+    } catch (error) {
+      console.error('Erreur lors de l\'ouverture du chat:', error);
+    }
+  });
+
   // Nettoyer quand l'utilisateur quitte la page
   window.addEventListener('beforeunload', () => {
-    stopMessagePolling();
+    stopRealTimePolling();
+    console.log('🛑 Polling en temps réel arrêté (fermeture de page)');
+  });
+
+  // Gérer la visibilité de la page pour optimiser le polling
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      console.log('📱 Page cachée - polling continue en arrière-plan');
+    } else {
+      console.log('📱 Page visible - polling actif');
+      // Forcer un rafraîchissement immédiat quand la page redevient visible
+      setTimeout(async () => {
+        await loadAndRenderChats();
+      }, 500);
+    }
   });
 }
 
@@ -210,9 +241,6 @@ async function handleChatClick(chat) {
 
   console.log('Chat cliqué:', chat);
 
-  // Arrêter le polling précédent
-  stopMessagePolling();
-
   // Afficher les éléments de chat
   showChatInterface();
 
@@ -236,9 +264,6 @@ async function handleChatClick(chat) {
   
   // Charger les messages de manière asynchrone
   await loadChatMessages(chat.id);
-
-  // Démarrer le polling des nouveaux messages
-  startMessagePolling(chat.id);
 
   // Simuler la livraison des messages après un délai
   setTimeout(() => {
@@ -458,58 +483,6 @@ function showNotification(message, type = 'success') {
   setTimeout(() => {
     notification.remove();
   }, 3000);
-}
-
-// Fonction pour démarrer le polling des messages
-function startMessagePolling(chatId) {
-  // Arrêter le polling précédent s'il existe
-  stopMessagePolling();
-  
-  // Initialiser le dernier timestamp
-  lastMessageTimestamp = new Date().toISOString();
-
-  messagePollingInterval = setInterval(async () => {
-    try {
-      // Récupérer les nouveaux messages depuis l'API
-      const response = await fetch(`${API_URL}/messages?chatId=${chatId}&createdAt_gt=${lastMessageTimestamp}`);
-      if (!response.ok) throw new Error('Erreur lors de la récupération des messages');
-      
-      const newMessages = await response.json();
-      
-      // S'il y a de nouveaux messages
-      if (newMessages.length > 0) {
-        console.log('Nouveaux messages détectés:', newMessages);
-        
-        // Mettre à jour le dernier timestamp
-        const latestMessage = newMessages[newMessages.length - 1];
-        lastMessageTimestamp = latestMessage.createdAt;
-        
-        // Ajouter les nouveaux messages à l'interface
-        newMessages.forEach(message => {
-          addMessageToChat(message);
-        });
-        
-        // Scroller vers le bas
-        const messagesContainer = document.getElementById('messages-container');
-        if (messagesContainer) {
-          messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        }
-        
-        // Mettre à jour la liste des chats
-        await loadAndRenderChats();
-      }
-    } catch (error) {
-      console.error('Erreur lors du polling des messages:', error);
-    }
-  }, 3000); // Polling toutes les 3 secondes
-}
-
-// Fonction pour arrêter le polling
-function stopMessagePolling() {
-  if (messagePollingInterval) {
-    clearInterval(messagePollingInterval);
-    messagePollingInterval = null;
-  }
 }
 
 export { 
