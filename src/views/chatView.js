@@ -30,7 +30,14 @@ function renderChatHeader(chat) {
   const activeChatAvatar = document.getElementById('active-chat-avatar');
   const headerRight = document.querySelector('.chat-header-right');
   
+  if (!chatHeader || !activeChatName || !activeChatStatus || !activeChatAvatar) {
+    console.error('Elements de header manquants');
+    return;
+  }
+  
   chatHeader.classList.remove('hidden');
+  chatHeader.style.display = 'flex';
+  
   activeChatName.textContent = chat.name;
   activeChatStatus.textContent = chat.online ? 'En ligne' : 'Vu pour la dernière fois récemment';
   activeChatAvatar.src = chat.avatar;
@@ -61,19 +68,58 @@ function renderChatHeader(chat) {
   }
 }
 
-// Render messages for a specific chat
+// Render messages for a specific chat - CORRECTION PRINCIPALE
 function renderMessages(messages) {
+  console.log('renderMessages appelé avec:', messages);
+  
   const messagesContainer = document.getElementById('messages-container');
   const messagesList = document.getElementById('messages-list');
+  const welcomeScreen = document.getElementById('welcome-screen');
+  const messageInputContainer = document.getElementById('message-input-container');
   
+  if (!messagesContainer || !messagesList) {
+    console.error('Conteneurs de messages manquants');
+    return;
+  }
+  
+  // CORRECTION: Afficher le conteneur de messages et masquer l'écran de bienvenue
   messagesContainer.classList.remove('hidden');
+  messagesContainer.style.display = 'flex';
+  
+  if (welcomeScreen) {
+    welcomeScreen.style.display = 'none';
+    welcomeScreen.classList.add('hidden');
+  }
+  
+  if (messageInputContainer) {
+    messageInputContainer.classList.remove('hidden');
+    messageInputContainer.style.display = 'flex';
+  }
+  
+  // Vider la liste des messages
   messagesList.innerHTML = '';
   
   // Style du conteneur de messages pour ressembler à WhatsApp
-  messagesContainer.className = 'flex-1 overflow-y-auto bg-[#0b141a] relative';
+  messagesContainer.className = 'flex-1 overflow-y-auto bg-[#0b141a] relative flex flex-col';
   messagesContainer.style.backgroundImage = `url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cpattern id='whatsapp-bg' x='0' y='0' width='100' height='100' patternUnits='userSpaceOnUse'%3E%3Cpath d='M0 0h100v100H0z' fill='%23111b21'/%3E%3Cpath d='M20 20h60v60H20z' fill='none' stroke='%23182229' stroke-width='0.5' opacity='0.1'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='100%25' height='100%25' fill='url(%23whatsapp-bg)'/%3E%3C/svg%3E")`;
   
-  messagesList.className = 'px-4 py-2 space-y-1';
+  messagesList.className = 'px-4 py-2 space-y-1 flex-1';
+  
+  // Vérifier si on a des messages
+  if (!messages || messages.length === 0) {
+    console.log('Aucun message à afficher');
+    messagesList.innerHTML = `
+      <div class="flex items-center justify-center h-full">
+        <div class="text-center text-gray-400">
+          <p class="text-lg mb-2">Aucun message</p>
+          <p class="text-sm">Commencez une conversation</p>
+        </div>
+      </div>
+    `;
+    return;
+  }
+  
+  console.log(`Affichage de ${messages.length} messages`);
   
   // Grouper les messages par date
   const messagesByDate = groupMessagesByDate(messages);
@@ -90,16 +136,12 @@ function renderMessages(messages) {
     });
   });
   
-  // Scroll to bottom
+  // Scroll to bottom après un court délai pour s'assurer que le DOM est mis à jour
   setTimeout(() => {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
   }, 100);
   
-  // Show message input
-  document.getElementById('message-input-container').classList.remove('hidden');
-  
-  // Hide welcome screen
-  document.getElementById('welcome-screen').classList.add('hidden');
+  console.log('Messages rendus avec succès');
 }
 
 // Grouper les messages par date
@@ -540,9 +582,30 @@ function parseEmojis(text) {
   });
 }
 
-// Add a new message to the chat
+// Add a new message to the chat - CORRECTION
 function addMessageToChat(message) {
+  console.log('addMessageToChat appelé avec:', message);
+  
   const messagesList = document.getElementById('messages-list');
+  const messagesContainer = document.getElementById('messages-container');
+  
+  if (!messagesList) {
+    console.error('messages-list non trouvé');
+    return;
+  }
+  
+  // S'assurer que le conteneur de messages est visible
+  if (messagesContainer) {
+    messagesContainer.classList.remove('hidden');
+    messagesContainer.style.display = 'flex';
+    
+    // Masquer l'écran de bienvenue
+    const welcomeScreen = document.getElementById('welcome-screen');
+    if (welcomeScreen) {
+      welcomeScreen.style.display = 'none';
+      welcomeScreen.classList.add('hidden');
+    }
+  }
   
   // Vérifier si on doit ajouter un nouveau séparateur de date
   const lastSeparator = messagesList.querySelector('.flex.justify-center:last-of-type');
@@ -567,11 +630,14 @@ function addMessageToChat(message) {
   });
   
   // Scroll to bottom avec animation fluide
-  const messagesContainer = document.getElementById('messages-container');
-  messagesContainer.scrollTo({
-    top: messagesContainer.scrollHeight,
-    behavior: 'smooth'
-  });
+  if (messagesContainer) {
+    messagesContainer.scrollTo({
+      top: messagesContainer.scrollHeight,
+      behavior: 'smooth'
+    });
+  }
+  
+  console.log('Message ajouté avec succès');
 }
 
 // Initialize the message input and voice recording
@@ -581,6 +647,11 @@ function initMessageInput(onSendMessage) {
   const emojiBtn = document.getElementById('emoji-btn');
   const attachBtn = document.getElementById('attach-btn');
   const messageInputContainer = document.getElementById('message-input-container');
+
+  if (!messageInput || !voiceBtn || !emojiBtn || !messageInputContainer) {
+    console.error('Éléments d\'input manquants');
+    return;
+  }
 
   // Style de l'input pour ressembler à WhatsApp
   messageInput.className = 'w-full bg-[#2a3942] text-white rounded-lg px-4 py-3 outline-none placeholder-gray-400 text-[15px]';

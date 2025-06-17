@@ -127,7 +127,7 @@
       </div>
 
       <!-- Chat Content avec effets dynamiques -->
-      <div id="chat-content" class="flex-1 flex flex-col bg-gradient-to-br from-[#0b141a] to-[#111b21]">
+      <div id="chat-content" class="flex-1 flex flex-col bg-gradient-to-br from-[#0b141a] to-[#111b21] min-w-0">
         <div id="chat-header" class="p-2 bg-gradient-to-r from-[#202c33]/90 to-[#1e2a31]/90 flex justify-between items-center hidden backdrop-blur-md border-b border-gray-600/50 shadow-lg">
           <div class="flex items-center gap-3 px-4">
             <img id="active-chat-avatar" src="" alt="" class="w-10 h-10 rounded-full ring-2 ring-[#00a884]/30 hover:ring-[#00a884]/60 transition-all duration-300">
@@ -146,13 +146,13 @@
           </div>
         </div>
 
+        <!-- Messages Container - Version corrigée -->
         <div id="messages-container" 
-             class="flex-1 overflow-y-auto p-5 bg-gradient-to-br from-[#0b141a]/90 via-[#111b21]/80 to-[#0f1419]/90 hidden scrollbar-thin scrollbar-thumb-[#00a884]/30 scrollbar-track-transparent" 
-             style="background-image: radial-gradient(circle at 20% 20%, rgba(0, 168, 132, 0.05) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.02) 0%, transparent 50%), url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Cdefs%3E%3Cpattern%20id%3D%22chat-bg%22%20x%3D%220%22%20y%3D%220%22%20width%3D%2220%22%20height%3D%2220%22%20patternUnits%3D%22userSpaceOnUse%22%3E%3Ccircle%20cx%3D%2210%22%20cy%3D%2210%22%20r%3D%221%22%20fill%3D%22%23ffffff%22%20opacity%3D%220.03%22%2F%3E%3C%2Fpattern%3E%3C%2Fdefs%3E%3Crect%20width%3D%22100%22%20height%3D%22100%22%20fill%3D%22url%28%23chat-bg%29%22%2F%3E%3C%2Fsvg%3E');">
+             class="flex-1 overflow-y-auto p-5 bg-transparent hidden scrollbar-thin scrollbar-thumb-[#00a884]/30 scrollbar-track-transparent">
           <div id="messages-list" class="max-w-3xl mx-auto"></div>
         </div>
 
-        <!-- Welcome Screen avec logo et message -->
+        <!-- Welcome Screen -->
         <div id="welcome-screen" class="flex-1 flex flex-col items-center justify-center bg-gradient-to-br from-[#222e35] via-[#1e2a31] to-[#1a252b] relative overflow-hidden">
           <!-- Effets de fond subtils -->
           <div class="absolute inset-0 opacity-3">

@@ -25,12 +25,30 @@
   border-right: 1px solid #2a3942;
 }
 
-/* Style pour le conteneur de messages */
+/* Styles de base pour le conteneur de messages */
 #messages-container {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-width: 0; /* Empêche le débordement */
+  background-color: transparent;
+ 
+  background-repeat: repeat;
+  background-size: cover;
+  position: relative;
+}
+
+#messages-container::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom right, 
+    rgba(32, 44, 51, 0.3),
+    rgba(17, 27, 33, 0.3)
+  );
+  pointer-events: none;
+}
+
+/* Style pour la liste des messages */
+#messages-list {
+  position: relative;
+  z-index: 1;
 }
 
 /* Style pour l'écran de bienvenue */
