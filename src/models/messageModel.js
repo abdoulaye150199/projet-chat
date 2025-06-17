@@ -3,8 +3,8 @@ import { getCurrentUser } from '../utils/auth.js';
 
 // Configuration des URLs d'API
 const API_CONFIG = {
-    LOCAL: 'http://localhost:3000',
-    PRODUCTION: 'https://serveur2.onrender.com'
+  LOCAL: 'http://localhost:3000',
+  PRODUCTION: 'https://serveur2.onrender.com'
 };
 
 // Fonction pour détecter l'environnement et choisir l'URL appropriée
@@ -252,11 +252,21 @@ async function pollForNewMessages() {
 
     console.log('🔄 Polling pour nouveaux messages...');
 
-    // Récupérer tous les messages depuis le dernier polling
-    const response = await fetch(`${API_URL}/messages`);
+    // Add timeout and error handling
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+    const response = await fetch(`${API_URL}/messages`, {
+      signal: controller.signal,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    clearTimeout(timeoutId);
+
     if (!response.ok) {
-      console.warn('Erreur lors du polling des messages');
-      return;
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
 
     const allMessages = await response.json();
@@ -294,7 +304,11 @@ async function pollForNewMessages() {
     }
 
   } catch (error) {
-    console.error('❌ Erreur lors du polling des messages:', error);
+    if (error.name === 'AbortError') {
+      console.warn('Request timed out');
+    } else {
+      console.error('❌ Erreur lors du polling des messages:', error);
+    }
   }
 }
 

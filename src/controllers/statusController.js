@@ -210,7 +210,18 @@ export async function deleteStatus(statusId) {
 // Fonction pour synchroniser les statuts des autres utilisateurs
 export async function syncOtherUsersStatuses() {
   try {
-    const response = await fetch(`${API_URL}/statuses`);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+    const response = await fetch(`${API_URL}/statuses`, {
+      signal: controller.signal,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    clearTimeout(timeoutId);
+
     if (response.ok) {
       const allStatuses = await response.json();
       const currentUser = JSON.parse(localStorage.getItem('whatsapp_user')) || { id: 1 };
@@ -229,7 +240,11 @@ export async function syncOtherUsersStatuses() {
       return otherStatuses;
     }
   } catch (error) {
-    console.warn('Erreur lors de la synchronisation des statuts:', error);
+    if (error.name === 'AbortError') {
+      console.warn('Status sync request timed out');
+    } else {
+      console.warn('Erreur lors de la synchronisation des statuts:', error);
+    }
   }
   
   return [];

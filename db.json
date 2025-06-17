@@ -54,8 +54,8 @@
       "id": "1750197069894",
       "contactId": "1750023684131",
       "name": "Abdoulaye Diallo",
-      "lastMessage": "",
-      "timestamp": "21:51:09",
+      "lastMessage": "salu",
+      "timestamp": "23:22",
       "unreadCount": 0,
       "avatar": "https://api.dicebear.com/6.x/initials/svg?seed=Abdoulaye Diallo",
       "online": false,
@@ -87,7 +87,7 @@
       ]
     },
     {
-      "id": 1750199705950,
+      "id": "1750199705950",
       "contactId": "1",
       "name": "Utilisateur Test",
       "lastMessage": "",
@@ -105,7 +105,7 @@
       ]
     },
     {
-      "id": 1750202102871,
+      "id": "1750202102871",
       "contactId": "1",
       "name": "Utilisateur Test",
       "lastMessage": "",
@@ -201,11 +201,24 @@
       "delivered": true,
       "read": false,
       "createdAt": "2025-06-17T23:15:38.826Z"
+    },
+    {
+      "id": "1750202538181",
+      "chatId": "1750197069894",
+      "senderId": "1",
+      "recipientId": "1750023684131",
+      "text": "salu",
+      "timestamp": "23:22",
+      "isMe": true,
+      "sent": true,
+      "delivered": true,
+      "read": false,
+      "createdAt": "2025-06-17T23:22:18.195Z"
     }
   ],
   "statuses": [
     {
-      "id": 1750199802025,
+      "id": "1750199802025",
       "userId": "1750199698638",
       "userName": "Doyen Doyen",
       "userAvatar": "https://api.dicebear.com/6.x/initials/svg?seed=Doyen Doyen",
@@ -367,6 +380,17 @@
       "timestamp": "2025-06-17T23:15:38.862Z",
       "read": false,
       "priority": "high"
+    },
+    {
+      "id": "1750202538228",
+      "type": "message",
+      "senderId": "1",
+      "recipientId": "1750023684131",
+      "messageId": "1750202538181",
+      "chatId": "1750197069894",
+      "content": "salu",
+      "timestamp": "2025-06-17T23:22:18.228Z",
+      "read": false
     }
   ]
 }
