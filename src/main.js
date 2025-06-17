@@ -4,7 +4,6 @@ import { initApp } from './controllers/appController.js';
 import { isAuthenticated, requireAuth } from './utils/auth.js';
 import { generateInitialsAvatarUrl } from './utils/avatarGenerator.js';
 import { renderAttachmentModal } from './views/attachmentModalView.js';
-import realtimeService from './services/realtimeService.js';
 
 // Fonction pour initialiser les gestionnaires d'événements
 function initializeEventListeners() {
@@ -60,72 +59,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Initialize the application only if authenticated
   initApp();
-  
-  // Initialiser le service temps réel
-  if (isAuthenticated()) {
-    realtimeService.connect();
-    
-    // Gérer les événements de connexion
-    realtimeService.on('connected', () => {
-      console.log('✅ Connecté au service temps réel');
-      showConnectionStatus('connected');
-    });
-    
-    realtimeService.on('disconnected', () => {
-      console.log('❌ Déconnecté du service temps réel');
-      showConnectionStatus('disconnected');
-    });
-    
-    realtimeService.on('reconnectFailed', () => {
-      console.log('❌ Échec de reconnexion');
-      showConnectionStatus('failed');
-    });
-  }
-});
-
-// Fonction pour afficher le statut de connexion
-function showConnectionStatus(status) {
-  // Supprimer l'ancien indicateur
-  const existingIndicator = document.getElementById('connection-status');
-  if (existingIndicator) {
-    existingIndicator.remove();
-  }
-  
-  // Créer le nouvel indicateur
-  const indicator = document.createElement('div');
-  indicator.id = 'connection-status';
-  indicator.className = `fixed top-4 right-4 px-3 py-2 rounded-lg text-white text-sm z-50 transition-all duration-300`;
-  
-  switch (status) {
-    case 'connected':
-      indicator.className += ' bg-green-500';
-      indicator.textContent = '🟢 Connecté';
-      // Masquer après 3 secondes
-      setTimeout(() => {
-        if (indicator.parentNode) {
-          indicator.style.opacity = '0';
-          setTimeout(() => indicator.remove(), 300);
-        }
-      }, 3000);
-      break;
-    case 'disconnected':
-      indicator.className += ' bg-yellow-500';
-      indicator.textContent = '🟡 Reconnexion...';
-      break;
-    case 'failed':
-      indicator.className += ' bg-red-500';
-      indicator.textContent = '🔴 Hors ligne';
-      break;
-  }
-  
-  document.body.appendChild(indicator);
-}
-
-// Gérer la fermeture de l'application
-window.addEventListener('beforeunload', () => {
-  if (realtimeService) {
-    realtimeService.disconnect();
-  }
 });
 
 // Expose the function to the window object

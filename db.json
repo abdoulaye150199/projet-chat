@@ -8,12 +8,12 @@
       "name": "Utilisateur Test",
       "countryCode": "SN",
       "status": "Hey! J'utilise WhatsApp",
-      "online": false,
+      "online": true,
       "avatar": "https://api.dicebear.com/6.x/initials/svg?seed=Utilisateur Test",
       "registeredAt": "2024-01-01T00:00:00.000Z",
-      "lastLogin": "2024-01-15T10:30:00.000Z",
+      "lastLogin": "2025-06-17T15:39:36.852Z",
       "lastSeen": "2025-06-17T14:43:43.433Z",
-      "isOnline": false,
+      "isOnline": true,
       "createdAt": "2024-01-01T00:00:00.000Z"
     },
     {
