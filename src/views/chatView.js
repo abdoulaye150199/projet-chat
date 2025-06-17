@@ -15,6 +15,7 @@ import {
   getRecordingDuration
 } from './chatView2.js';
 import { addMessage, getMessages } from '../models/messageModel.js';
+import { getCurrentUser } from '../utils/auth.js';
 
 let emojiPicker = null;
 let isRecording = false;
@@ -155,22 +156,38 @@ function createDateSeparator(dateText) {
   return separator;
 }
 
-// Create a single message element (style WhatsApp)
+// Create a single message element (style WhatsApp) - LOGIQUE CORRIGÉE
 function createMessageElement(message) {
+  const currentUser = getCurrentUser();
+  
+  // CORRECTION PRINCIPALE: Déterminer correctement si le message est "à moi"
+  // Un message est "à moi" si l'utilisateur connecté est l'expéditeur
+  const isMyMessage = message.senderId === currentUser.id || 
+                     (message.isMe !== undefined ? message.isMe : false);
+  
+  console.log('Message:', {
+    id: message.id,
+    text: message.text,
+    senderId: message.senderId,
+    currentUserId: currentUser.id,
+    isMyMessage: isMyMessage,
+    originalIsMe: message.isMe
+  });
+
   const messageContainer = document.createElement('div');
-  messageContainer.className = `flex ${message.isMe ? 'justify-end' : 'justify-start'} mb-1`;
+  messageContainer.className = `flex ${isMyMessage ? 'justify-end' : 'justify-start'} mb-1`;
   messageContainer.setAttribute('data-message-id', message.id);
   
   const messageBubble = document.createElement('div');
   messageBubble.className = `relative max-w-[65%] rounded-lg px-3 py-2 ${
-    message.isMe 
+    isMyMessage 
       ? 'bg-[#005c4b] text-white rounded-br-sm' 
       : 'bg-[#202c33] text-white rounded-bl-sm'
   } shadow-sm`;
 
   // Vérifier si c'est un message audio
   if (message.isVoice && message.audioBlob) {
-    const voiceContainer = createVoiceMessageElement(message);
+    const voiceContainer = createVoiceMessageElement(message, isMyMessage);
     messageBubble.appendChild(voiceContainer);
   } else if (message.isImage) {
     const imageContainer = createImageMessage(message);
@@ -195,7 +212,8 @@ function createMessageElement(message) {
   
   messageFooter.appendChild(timestamp);
   
-  if (message.isMe) {
+  // Afficher les statuts de lecture SEULEMENT pour mes messages
+  if (isMyMessage) {
     const statusIcon = document.createElement('span');
     statusIcon.className = 'text-[12px] ml-1 status-icon';
     statusIcon.innerHTML = message.read ? '✓✓' : message.delivered ? '✓✓' : '✓';
@@ -235,14 +253,14 @@ function createImageMessage(message) {
   return imageContainer;
 }
 
-function createVoiceMessageElement(message) {
+function createVoiceMessageElement(message, isMyMessage) {
   const voiceContainer = document.createElement('div');
   voiceContainer.className = 'flex items-center gap-3 min-w-[280px] py-2';
   
   // Bouton play/pause
   const playButton = document.createElement('button');
   playButton.className = `w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-200 ${
-    message.isMe 
+    isMyMessage 
       ? 'bg-white bg-opacity-20 hover:bg-opacity-30 text-white' 
       : 'bg-[#00a884] hover:bg-[#06cf9c] text-white'
   }`;
@@ -266,7 +284,7 @@ function createVoiceMessageElement(message) {
   for (let i = 0; i < barCount; i++) {
     const bar = document.createElement('div');
     bar.className = `w-0.5 rounded-full transition-all duration-200 ${
-      message.isMe 
+      isMyMessage 
         ? 'bg-white bg-opacity-40 hover:bg-opacity-60' 
         : 'bg-[#8696a0] hover:bg-[#aebac1]'
     }`;
@@ -283,7 +301,7 @@ function createVoiceMessageElement(message) {
   // Durée du message vocal - CORRECTION ICI
   const duration = document.createElement('span');
   duration.className = `text-sm flex-shrink-0 font-mono ${
-    message.isMe ? 'text-white text-opacity-80' : 'text-[#8696a0]'
+    isMyMessage ? 'text-white text-opacity-80' : 'text-[#8696a0]'
   }`;
   
   // Utiliser la durée du message ou une valeur par défaut
@@ -377,7 +395,7 @@ function createVoiceMessageElement(message) {
 
   // Mettre à jour l'état initial des barres
   waveformBars.forEach(bar => {
-    if (message.isMe) {
+    if (isMyMessage) {
       bar.classList.add('bg-white');
       bar.classList.add('bg-opacity-40');
     } else {
@@ -404,13 +422,13 @@ function createVoiceMessageElement(message) {
           if (index / barCount <= progress) {
             bar.classList.remove('bg-opacity-40', 'bg-[#8696a0]');
             
-            if (message.isMe) {
+            if (isMyMessage) {
               bar.classList.add('bg-white');
             } else {
               bar.classList.add('bg-[#00a884]');
             }
           } else {
-            if (message.isMe) {
+            if (isMyMessage) {
               bar.classList.add('bg-white', 'bg-opacity-40');
             } else {
               bar.classList.add('bg-[#8696a0]');
@@ -441,7 +459,7 @@ function createVoiceMessageElement(message) {
       // Réinitialiser la forme d'onde
       waveformBars.forEach(bar => {
         bar.classList.remove('bg-white', 'bg-[#00a884]');
-        if (message.isMe) {
+        if (isMyMessage) {
           bar.classList.add('bg-white', 'bg-opacity-40');
         } else {
           bar.classList.add('bg-[#8696a0]');

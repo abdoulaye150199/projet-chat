@@ -1,39 +1,39 @@
 {
   "users": [
     {
-      "id": 1,
+      "id": "1",
       "phone": "+221 77 123 45 67",
       "firstName": "Utilisateur",
       "lastName": "Test",
       "name": "Utilisateur Test",
       "countryCode": "SN",
       "status": "Hey! J'utilise WhatsApp",
-      "online": true,
+      "online": false,
       "avatar": "https://api.dicebear.com/6.x/initials/svg?seed=Utilisateur Test",
       "registeredAt": "2024-01-01T00:00:00.000Z",
       "lastLogin": "2024-01-15T10:30:00.000Z",
-      "lastSeen": "2024-01-15T10:30:00.000Z",
-      "isOnline": true,
+      "lastSeen": "2025-06-17T14:43:43.433Z",
+      "isOnline": false,
       "createdAt": "2024-01-01T00:00:00.000Z"
     },
     {
-      "id": 2,
+      "id": "2",
       "phone": "+221 77 234 56 78",
       "firstName": "Khouss",
       "lastName": "Diallo",
       "name": "Khouss Diallo",
       "countryCode": "SN",
       "status": "Développeur passionné",
-      "online": false,
+      "online": true,
       "avatar": "https://api.dicebear.com/6.x/initials/svg?seed=Khouss Diallo",
       "registeredAt": "2024-01-02T00:00:00.000Z",
-      "lastLogin": "2024-01-15T08:15:00.000Z",
-      "lastSeen": "2024-01-15T08:15:00.000Z",
-      "isOnline": false,
+      "lastLogin": "2025-06-17T14:43:56.612Z",
+      "lastSeen": "2025-06-17T09:12:13.801Z",
+      "isOnline": true,
       "createdAt": "2024-01-02T00:00:00.000Z"
     },
     {
-      "id": 3,
+      "id": "3",
       "phone": "+221 77 345 67 89",
       "firstName": "Moussa",
       "lastName": "Ba",
@@ -43,13 +43,13 @@
       "online": true,
       "avatar": "https://api.dicebear.com/6.x/initials/svg?seed=Moussa Ba",
       "registeredAt": "2024-01-03T00:00:00.000Z",
-      "lastLogin": "2024-01-15T11:00:00.000Z",
+      "lastLogin": "2025-06-17T09:12:27.321Z",
       "lastSeen": "2024-01-15T11:00:00.000Z",
       "isOnline": true,
       "createdAt": "2024-01-03T00:00:00.000Z"
     },
     {
-      "id": 4,
+      "id": "4",
       "phone": "+221 77 456 78 90",
       "firstName": "Fatou",
       "lastName": "Sall",
@@ -67,7 +67,7 @@
   ],
   "chats": [
     {
-      "id": 1,
+      "id": "1",
       "contactId": 2,
       "name": "Khouss Diallo",
       "lastMessage": "Salut ! Comment ça va ?",
@@ -84,7 +84,7 @@
       ]
     },
     {
-      "id": 2,
+      "id": "2",
       "contactId": 3,
       "name": "Moussa Ba",
       "lastMessage": "À bientôt !",
@@ -101,7 +101,7 @@
       ]
     },
     {
-      "id": 1750114176035,
+      "id": "1750114176035",
       "contactId": 3,
       "name": "Moussa Ba",
       "lastMessage": "",
@@ -119,11 +119,11 @@
       ]
     },
     {
-      "id": 1750114367830,
+      "id": "1750114367830",
       "contactId": 2,
       "name": "Khouss Diallo",
-      "lastMessage": "",
-      "timestamp": "22:52:47",
+      "lastMessage": "boy",
+      "timestamp": "09:11",
       "unreadCount": 0,
       "avatar": "https://api.dicebear.com/6.x/initials/svg?seed=Khouss Diallo",
       "online": false,
@@ -134,6 +134,60 @@
       "participants": [
         3,
         2
+      ]
+    },
+    {
+      "id": "1750118658470",
+      "contactId": 4,
+      "name": "Fatou Sall",
+      "lastMessage": "",
+      "timestamp": "00:04:18",
+      "unreadCount": 0,
+      "avatar": "https://api.dicebear.com/6.x/initials/svg?seed=Fatou Sall",
+      "online": false,
+      "status": "Occupée",
+      "messages": [],
+      "isGroup": false,
+      "isCommunity": false,
+      "participants": [
+        3,
+        4
+      ]
+    },
+    {
+      "id": 1750150959276,
+      "contactId": "2",
+      "name": "Khouss Diallo",
+      "lastMessage": "",
+      "timestamp": "09:02:39",
+      "unreadCount": 0,
+      "avatar": "https://api.dicebear.com/6.x/initials/svg?seed=Khouss Diallo",
+      "online": false,
+      "status": "Développeur passionné",
+      "messages": [],
+      "isGroup": false,
+      "isCommunity": false,
+      "participants": [
+        "1",
+        "2"
+      ]
+    },
+    {
+      "id": 1750151521487,
+      "contactId": "3",
+      "name": "Moussa Ba",
+      "lastMessage": "",
+      "timestamp": "09:12:01",
+      "unreadCount": 0,
+      "avatar": "https://api.dicebear.com/6.x/initials/svg?seed=Moussa Ba",
+      "online": true,
+      "status": "Toujours disponible",
+      "messages": [],
+      "isGroup": false,
+      "isCommunity": false,
+      "participants": [
+        "2",
+        "3"
       ]
     }
   ],
@@ -241,11 +295,63 @@
       "delivered": true,
       "read": false,
       "createdAt": "2025-06-16T22:52:53.896Z"
+    },
+    {
+      "id": "1750118662756",
+      "chatId": 1750118658470,
+      "senderId": 3,
+      "recipientId": 4,
+      "text": "sa",
+      "timestamp": "00:04",
+      "isMe": true,
+      "sent": true,
+      "delivered": true,
+      "read": false,
+      "createdAt": "2025-06-17T00:04:22.756Z"
+    },
+    {
+      "id": "1750151526956",
+      "chatId": 1750151521487,
+      "senderId": "2",
+      "recipientId": "3",
+      "text": "boy",
+      "timestamp": "09:12",
+      "isMe": true,
+      "sent": true,
+      "delivered": true,
+      "read": false,
+      "createdAt": "2025-06-17T09:12:06.957Z"
+    },
+    {
+      "id": "1750151575227",
+      "chatId": 1750151521487,
+      "senderId": "3",
+      "recipientId": "3",
+      "text": "slt",
+      "timestamp": "09:12",
+      "isMe": true,
+      "sent": true,
+      "delivered": true,
+      "read": false,
+      "createdAt": "2025-06-17T09:12:55.227Z"
+    },
+    {
+      "id": "1750171404845",
+      "chatId": 1750150959276,
+      "senderId": "1",
+      "recipientId": "2",
+      "text": "salut",
+      "timestamp": "14:43",
+      "isMe": true,
+      "sent": true,
+      "delivered": true,
+      "read": false,
+      "createdAt": "2025-06-17T14:43:24.845Z"
     }
   ],
   "statuses": [
     {
-      "id": 1,
+      "id": "1",
       "userId": 2,
       "userName": "Khouss Diallo",
       "userAvatar": "https://api.dicebear.com/6.x/initials/svg?seed=Khouss Diallo",
@@ -259,7 +365,7 @@
       "isOwn": false
     },
     {
-      "id": 2,
+      "id": "2",
       "userId": 3,
       "userName": "Moussa Ba",
       "userAvatar": "https://api.dicebear.com/6.x/initials/svg?seed=Moussa Ba",
@@ -273,7 +379,7 @@
       "isOwn": false
     },
     {
-      "id": 1750114594307,
+      "id": "1750114594307",
       "userId": 3,
       "userName": "Moussa Ba",
       "userAvatar": "https://api.dicebear.com/6.x/initials/svg?seed=Moussa Ba",
@@ -283,11 +389,13 @@
       "backgroundColor": "#000000",
       "createdAt": "2025-06-16T22:56:34.307Z",
       "expiresAt": "2025-06-17T22:56:34.307Z",
-      "viewedBy": [],
+      "viewedBy": [
+        "current-user"
+      ],
       "isOwn": true
     },
     {
-      "id": 1750114606315,
+      "id": "1750114606315",
       "userId": 3,
       "userName": "Moussa Ba",
       "userAvatar": "https://api.dicebear.com/6.x/initials/svg?seed=Moussa Ba",
@@ -297,7 +405,9 @@
       "backgroundColor": "#000000",
       "createdAt": "2025-06-16T22:56:46.315Z",
       "expiresAt": "2025-06-17T22:56:46.315Z",
-      "viewedBy": [],
+      "viewedBy": [
+        "current-user"
+      ],
       "isOwn": true
     }
   ],
@@ -380,7 +490,7 @@
       "chatId": 1750114367830,
       "content": "boy",
       "timestamp": "2025-06-16T22:52:53.907Z",
-      "read": false
+      "read": true
     },
     {
       "id": "1750114373915",
@@ -391,7 +501,99 @@
       "chatId": 1750114367830,
       "content": "boy",
       "timestamp": "2025-06-16T22:52:53.916Z",
+      "read": true,
+      "priority": "high"
+    },
+    {
+      "id": "1750118662773",
+      "type": "message",
+      "senderId": 3,
+      "recipientId": 4,
+      "messageId": "1750118662756",
+      "chatId": 1750118658470,
+      "content": "sa",
+      "timestamp": "2025-06-17T00:04:22.773Z",
+      "read": false
+    },
+    {
+      "id": "1750118662785",
+      "type": "message_from_user",
+      "senderId": 3,
+      "recipientId": 4,
+      "messageId": "1750118662756",
+      "chatId": 1750118658470,
+      "content": "sa",
+      "timestamp": "2025-06-17T00:04:22.785Z",
       "read": false,
+      "priority": "high"
+    },
+    {
+      "id": "1750151526979",
+      "type": "message",
+      "senderId": "2",
+      "recipientId": "3",
+      "messageId": "1750151526956",
+      "chatId": 1750151521487,
+      "content": "boy",
+      "timestamp": "2025-06-17T09:12:06.979Z",
+      "read": true
+    },
+    {
+      "id": "1750151526998",
+      "type": "message_from_user",
+      "senderId": "2",
+      "recipientId": "3",
+      "messageId": "1750151526956",
+      "chatId": 1750151521487,
+      "content": "boy",
+      "timestamp": "2025-06-17T09:12:06.998Z",
+      "read": true,
+      "priority": "high"
+    },
+    {
+      "id": "1750151575251",
+      "type": "message",
+      "senderId": "3",
+      "recipientId": "3",
+      "messageId": "1750151575227",
+      "chatId": 1750151521487,
+      "content": "slt",
+      "timestamp": "2025-06-17T09:12:55.251Z",
+      "read": true
+    },
+    {
+      "id": "1750151575270",
+      "type": "message_from_user",
+      "senderId": "3",
+      "recipientId": "3",
+      "messageId": "1750151575227",
+      "chatId": 1750151521487,
+      "content": "slt",
+      "timestamp": "2025-06-17T09:12:55.270Z",
+      "read": true,
+      "priority": "high"
+    },
+    {
+      "id": "1750171404873",
+      "type": "message",
+      "senderId": "1",
+      "recipientId": "2",
+      "messageId": "1750171404845",
+      "chatId": 1750150959276,
+      "content": "salut",
+      "timestamp": "2025-06-17T14:43:24.873Z",
+      "read": true
+    },
+    {
+      "id": "1750171404892",
+      "type": "message_from_user",
+      "senderId": "1",
+      "recipientId": "2",
+      "messageId": "1750171404845",
+      "chatId": 1750150959276,
+      "content": "salut",
+      "timestamp": "2025-06-17T14:43:24.892Z",
+      "read": true,
       "priority": "high"
     }
   ]

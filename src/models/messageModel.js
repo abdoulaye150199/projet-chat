@@ -239,7 +239,7 @@ async function markNotificationAsRead(notificationId) {
   }
 }
 
-// Fonction pour synchroniser les messages reçus
+// Fonction pour synchroniser les messages reçus - LOGIQUE CORRIGÉE
 async function syncReceivedMessages() {
   try {
     const currentUser = getCurrentUser();
@@ -254,10 +254,10 @@ async function syncReceivedMessages() {
         if (messageResponse.ok) {
           const message = await messageResponse.json();
           
-          // Ajouter le message aux messages locaux comme message reçu
+          // CORRECTION: Créer le message reçu avec la bonne logique
           const receivedMessage = {
             ...message,
-            isMe: false,
+            isMe: false, // TOUJOURS false pour les messages reçus
             delivered: true,
             read: false
           };
@@ -385,9 +385,15 @@ async function ensureChatExists(chatId, senderId) {
   }
 }
 
-// Ajouter cette nouvelle fonction
+// Ajouter cette nouvelle fonction - LOGIQUE CORRIGÉE
 async function getMessages(chatId) {
   try {
+    const currentUser = getCurrentUser();
+    if (!currentUser) {
+      console.error('Aucun utilisateur connecté');
+      return [];
+    }
+
     // D'abord synchroniser les messages reçus
     await syncReceivedMessages();
     
@@ -408,10 +414,12 @@ async function getMessages(chatId) {
         apiMessages.forEach(apiMsg => {
           const exists = allChatMessages.some(localMsg => localMsg.id === apiMsg.id);
           if (!exists) {
-            const currentUser = getCurrentUser();
+            // CORRECTION: Déterminer correctement si le message est "à moi"
+            const isMyMessage = apiMsg.senderId == currentUser.id;
+            
             allChatMessages.push({
               ...apiMsg,
-              isMe: apiMsg.senderId == currentUser.id
+              isMe: isMyMessage // Utiliser la logique corrigée
             });
           }
         });

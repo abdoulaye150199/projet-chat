@@ -261,6 +261,7 @@ function initSearch() {
   }
 }
 
+// FONCTION CORRIGÉE pour l'envoi de messages
 async function handleSendMessage(text, isVoice = false, duration = null, audioBlob = null) {
   if (!activeChat || !activeChat.id) {
     console.error('No active chat or invalid chat ID');
@@ -288,7 +289,7 @@ async function handleSendMessage(text, isVoice = false, duration = null, audioBl
           hour: '2-digit',
           minute: '2-digit'
         }),
-        isMe: true,
+        isMe: true, // TOUJOURS true pour les messages que j'envoie
         sent: true,
         delivered: false,
         read: false,
@@ -334,6 +335,8 @@ async function handleSendMessage(text, isVoice = false, duration = null, audioBl
     } else {
       // Message texte normal avec destinataire
       const recipientId = getRecipientId(activeChat);
+      
+      // CORRECTION: Toujours passer isMe=true pour les messages que j'envoie
       message = await addMessage(activeChat.id, text, true, recipientId);
       
       if (message) {
